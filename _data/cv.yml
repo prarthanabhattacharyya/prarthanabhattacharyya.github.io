@@ -8,13 +8,13 @@
     - name: Languages
       value: English, Bengali, Hindi, Japanese
     - name: Work Authorization
-      value: UK Global Talent
+      value: <a href="https://www.gov.uk/global-talent">UK Global Talent</a>
 
 - title: Experience
   type: time_table
   contents:
     - title: Machine Learning Engineer
-      institution: Eedi, London, UK
+      institution: <a href="https://eedi.com">Eedi</a>, London, UK
       year: 2025 - Present
       description:
         - Developing and deploying ML and Gen-AI solutions for education technology across UK schools.
@@ -24,7 +24,7 @@
         - Led internal workshop on Generative AI for Education and LearnLM, building team capability in LLM applications.
 
     - title: Senior Machine Learning Engineer
-      institution: Ultraleap, Bristol, UK
+      institution: <a href="https://www.ultraleap.com">Ultraleap</a>, Bristol, UK
       year: 2023 - 2025
       description:
         - Led hand tracking foundation model development for AI music tutors, redesigning core architecture within 4 months for improved temporal modeling and 3D spatial accuracy.
@@ -33,19 +33,19 @@
         - Improved IR pinch-tracking accuracy by 50%+ through dataset curation and addressing pose-class imbalances.
 
     - title: Machine Learning Researcher
-      institution: Gatik, Toronto, Canada
+      institution: <a href="https://gatik.ai">Gatik</a>, Toronto, Canada
       year: 2021 - 2022
       description:
         - Designed and implemented temporal motion forecasting solutions for autonomous driving (Mitacs PhD Fellowship).
     
     - title: Machine Learning Engineer Intern
-      institution: Apple, Toronto, Canada
+      institution: <a href="https://machinelearning.apple.com">Apple</a>, Toronto, Canada
       year: Summer 2022
       description:
         - Implemented self-supervised learning for Vision Transformers, improving Visual Lookup classification accuracy by 4-6%.
 
     - title: Applied Scientist II Intern
-      institution: Amazon Science, Vancouver, Canada
+      institution: <a href="https://www.amazon.science">Amazon Science</a>, Vancouver, Canada
       year: Summer 2021
       description:
         - Developed self-supervised transformer for logo recognition, achieving 4-11% improvement over SOTA (ICASSP 2022).
@@ -68,7 +68,7 @@
   type: time_table
   contents:
     - title: PhD in Electrical and Computer Engineering
-      institution: University of Waterloo, Canada
+      institution: <a href="https://uwaterloo.ca/">University of Waterloo</a>, Canada
       # year: 2018 - 2023
       description:
         - Developed ML algorithms for 3D object detection, tracking and motion forecasting for autonomous vehicles. 3rd place at NeurIPS 2019 Argoverse competition.
@@ -77,13 +77,13 @@
         - Mentored five undergraduate and MS students on thesis projects in 3D computer vision, self-supervised learning, and temporal motion forecasting.
     
     - title: Master of Science and Technology
-      institution: University of Tokyo, Japan
+      institution: <a href="https://www.u-tokyo.ac.jp/en/">University of Tokyo</a>, Japan
       # year: 2015 - 2017
       description:
         - "Specialized in 3D scene understanding and sensor fusion for autonomous vehicles. Developed ML approach for traffic analysis at urban intersections validated with real-world Tokyo data (IEEE VTC). MEXT Scholarship recipient."
 
     - title: Bachelor of Engineering
-      institution: Jadavpur University, India
+      institution: <a href="https://jadavpuruniversity.in/">Jadavpur University</a>, India
       # year: 2011 - 2015
       description:
         - "Focused on digital image compression using machine learning and fuzzy clustering. Published research on vector quantization-based image compression at IEEE conference."
