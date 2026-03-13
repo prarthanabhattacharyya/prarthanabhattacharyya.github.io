@@ -28,7 +28,7 @@ I'm a Machine Learning Research Engineer at Eedi, specializing in building pract
 
 My research has been recognized with a Best Paper award at ECCV-2024 Smart Eyewear Workshop and cited 450+ times, with open-source contributions achieving 400+ GitHub stars. My work has been demonstrated at major industry events including AWE-USA and CES.
 
-I'm a UK Global Talent awardee and hold a Ph.D. in Electrical and Computer Engineering from the [University of Waterloo](https://uwaterloo.ca/) (Canada) and a Master's from the [University of Tokyo](https://www.u-tokyo.ac.jp/en/) (Japan). I speak English, Bengali and Hindi fluently, with [N2 certification](https://www.jlpt.jp/e/about/levelsummary.html) in Japanese proficiency.
+I'm a [UK Global Talent](https://www.gov.uk/global-talent) awardee and hold a Ph.D. in Electrical and Computer Engineering from the [University of Waterloo](https://uwaterloo.ca/) (Canada) and a Master's from the [University of Tokyo](https://www.u-tokyo.ac.jp/en/) (Japan). I speak English, Bengali and Hindi fluently, with [N2 certification](https://www.jlpt.jp/e/about/levelsummary.html) in Japanese proficiency.
 
 **Current Focus**
 
