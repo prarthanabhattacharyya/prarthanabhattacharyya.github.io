@@ -18,7 +18,7 @@
       year: 2025 - Present
       description:
         - Developing and deploying ML and Gen-AI solutions for education technology across UK schools.
-        - Researched and implemented uncertainty quantification and misconception diagnosis from dialog in the maths-tutoring system. Enables targeted interventions for at-risk students.
+        - Researched and implemented uncertainty quantification and misconception diagnosis from dialog in Eedi's online maths-tutoring platform. Enables targeted interventions for at-risk students.
         - Evaluated and benchmarked general-purpose LLMs against domain-specific models to optimize production deployment for scalability, accuracy, speed, and cost.
         - Refactored Knowledge Tracing (KT) pipeline, reducing code by 31% and implementation time by 80%.
         - Deployed a generative next-question selector for dynamic quizzes in pilot schools. Productionized on Azure using LitServe, Terraform, and GitHub Actions.
