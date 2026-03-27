@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TurboQuant: Mathematical Foundations</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg:#0a0a0f; --bg2:#0f0f1a; --bg3:#13131f; --border:#1e1e30;
+  --text:#c8c8d8; --dim:#6a6a88; --head:#e8e8f8;
+  --green:#7fffb2; --gdim:#3a8f5a;
+  --pink:#ff7eb3; --orange:#ffaa5e; --blue:#7eb8ff; --purple:#c084fc;
+  --gold:#f5c842;
+  --mono:'JetBrains Mono',monospace; --serif:'Playfair Display',serif; --sans:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);background-size:32px 32px;opacity:.15;pointer-events:none;z-index:0}
+.wrap{max-width:880px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+/* hero */
+header{border-bottom:1px solid var(--border);padding:4.5rem 0 3.5rem;text-align:center}
+.tag{display:inline-block;font-family:var(--mono);font-size:.72rem;color:var(--green);border:1px solid var(--gdim);padding:.2em .8em;border-radius:2px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:1.4rem}
+h1{font-family:var(--serif);font-size:clamp(1.9rem,4.5vw,3.2rem);color:var(--head);line-height:1.15;margin-bottom:1rem}
+.sub{font-size:1rem;color:var(--dim);max-width:600px;margin:0 auto}
+
+/* sections */
+.pillar{padding:3.5rem 0;border-bottom:1px solid var(--border)}
+.pillar-header{display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:.6rem}
+.pillar-num{font-family:var(--mono);font-size:.72rem;color:var(--green);border:1px solid var(--gdim);border-radius:2px;padding:.25em .6em;white-space:nowrap;margin-top:.3rem;letter-spacing:.08em}
+h2{font-family:var(--serif);font-size:1.9rem;color:var(--head);line-height:1.2}
+h3{font-family:var(--sans);font-size:1rem;font-weight:600;color:var(--head);margin:1.8rem 0 .5rem;letter-spacing:.01em}
+h4{font-family:var(--mono);font-size:.85rem;color:var(--purple);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .4rem}
+p{margin-bottom:.9rem}
+ul{padding-left:1.4rem;margin-bottom:.9rem}
+li{margin:.3rem 0}
+
+/* plain-english box */
+.plain{background:#0f1208;border:1px solid #2a3a1a;border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:1.1rem 1.4rem;margin:1.2rem 0}
+.plain .plabel{font-family:var(--mono);font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.5rem}
+
+
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.9rem;margin:1.4rem 0 1.8rem}
+.summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.95rem 1rem;text-align:left}
+.summary-card .slabel{display:block;font-family:var(--mono);font-size:.68rem;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem}
+.summary-card p{margin:0;color:var(--text);font-size:.92rem;line-height:1.45;max-width:28ch}
+.algobox{background:linear-gradient(180deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:1.1rem 1.35rem;margin:1.5rem 0;text-align:left}
+.algobox .alabel{display:block;font-family:var(--mono);font-size:.7rem;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem}
+.algobox ol{margin:0;padding-left:1.4rem;max-width:760px}
+.algobox li{margin:.55rem 0;line-height:1.5}
+.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;margin:1.5rem 0 0}
+.toc a{display:block;text-decoration:none;color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem;font-size:.92rem}
+.toc a span{display:block;font-family:var(--mono);font-size:.68rem;color:var(--green);margin-bottom:.25rem;letter-spacing:.08em}
+.refs{margin-top:1.6rem}
+.refs li{margin:.45rem 0;color:var(--dim)}
+.refs strong{color:var(--text)}
+
+/* theorem */
+.thm{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:0 4px 4px 0;padding:1.1rem 1.4rem;margin:1.2rem 0;overflow-x:auto}
+.thm .tlabel{font-family:var(--mono);font-size:.7rem;color:var(--green);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.5rem}
+
+/* connection */
+.conn{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:0 4px 4px 0;padding:1rem 1.3rem;margin:1.2rem 0}
+.conn .clabel{font-family:var(--mono);font-size:.7rem;color:var(--purple);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem}
+
+/* note */
+.note{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:0 4px 4px 0;padding:1rem 1.3rem;margin:1.2rem 0}
+.note .nlabel{font-family:var(--mono);font-size:.7rem;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:.4rem}
+
+/* point sub-block (for JL) */
+.point{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:1.2rem 1.4rem;margin:1.4rem 0}
+.point-header{font-family:var(--mono);font-size:.78rem;color:var(--purple);font-weight:600;margin-bottom:.5rem;letter-spacing:.05em}
+.point-answers{font-family:var(--mono);font-size:.78rem;color:var(--dim);margin-top:.6rem;font-style:italic}
+
+/* viz */
+.viz{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1.4rem;margin:1.6rem 0}
+.vtitle{font-family:var(--mono);font-size:.73rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem}
+.vtitle em{color:var(--green);font-style:normal;margin-right:.4rem}
+.controls{display:flex;align-items:center;gap:1.2rem;margin-bottom:.9rem;flex-wrap:wrap}
+.controls label{font-family:var(--mono);font-size:.8rem;color:var(--dim);display:flex;align-items:center;gap:.5rem}
+.controls label .v{color:var(--green);font-weight:600;min-width:4ch}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;width:130px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--green);cursor:pointer}
+.vcap{font-size:.8rem;color:var(--dim);margin-top:.8rem;line-height:1.5}
+.vcap strong{color:var(--text)}
+
+/* stat readout */
+.stat-row{display:flex;gap:1.5rem;flex-wrap:wrap;margin:.6rem 0}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:.5rem .9rem;font-family:var(--mono);font-size:.82rem}
+.stat span{color:var(--green);font-weight:600}
+
+/* chain */
+.chain-section{padding:3.5rem 0}
+
+footer{border-top:1px solid var(--border);padding:2rem 0;text-align:center}
+footer p{font-family:var(--mono);font-size:.75rem;color:var(--dim)}
+
+.katex{font-size:1em !important}
+.katex-display{margin:1.2rem 0;overflow-x:auto}
+.katex-display>.katex{text-align:left}
+code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border);padding:.1em .4em;border-radius:3px;font-size:.88em;color:var(--green)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>The Maths Behind TurboQuant</h1>
+    <p class="sub">Classical results from probability, information theory, and geometry that explain why TurboQuant can compress KV-cache vectors aggressively while preserving the signal attention needs. Each section starts with intuition, then states the mathematics more carefully.</p>
+
+    <div class="summary-grid">
+      <div class="summary-card"><span class="slabel">30-second view</span><p>Rotate the KV vector, quantise the rotated coordinates efficiently, then keep a compact sign sketch of the residual so query-time inner products can be corrected.</p></div>
+      <div class="summary-card"><span class="slabel">What is exact?</span><p>The arc-cosine identity, the Gaussian rate-distortion function, and the exact coordinate law on the sphere are exact. Several other statements are asymptotic or benchmark approximations.</p></div>
+      <div class="summary-card"><span class="slabel">What is the point?</span><p>This is not “no approximation.” It is approximation in the right coordinates, with concentration and variance control that make the compression useful inside attention.</p></div>
+    </div>
+
+    <div class="algobox">
+      <span class="alabel">TurboQuant in five steps</span>
+      <ol>
+        <li>Generate shared random operators \(R\) and \(J\) from a seed.</li>
+        <li>Rotate the KV vector: \(y = Rx\).</li>
+        <li>Quantise \(y\) coordinatewise with a fixed scalar grid to obtain Stage 1.</li>
+        <li>Form the residual \(r = x - R^\top \tilde y\), then store \(\mathrm{sign}(Jr)\) as Stage 2.</li>
+        <li>At query time, combine the Stage 1 reconstruction with a calibrated estimator from \(\mathrm{sign}(Jr)\) and \(Jq\) to approximate \(\langle x,q\rangle\).</li>
+      </ol>
+    </div>
+
+    <div class="toc">
+      <a href="#p1"><span>01</span>Concentration</a>
+      <a href="#p2"><span>02</span>Rotated coordinates</a>
+      <a href="#p3"><span>03</span>Rate-distortion</a>
+      <a href="#p4"><span>04</span>JL lemma</a>
+      <a href="#p5"><span>05</span>Arc-cosine</a>
+      <a href="#p6"><span>06</span>Variance decay</a>
+      <a href="#p7"><span>07</span>Shared randomness</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ═══════════════════════════════════════════
+     01. CONCENTRATION OF MEASURE
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p1">
+  <div class="pillar-header"><span class="pillar-num">01</span><h2>Concentration of Measure</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    Imagine throwing a dart at a beach ball. In 2D, the dart could land anywhere. In 3D, slightly more surface area is near the equator. In very high dimension, most of the sphere lies close to an equatorial band relative to any fixed direction, and deviations away from that band become exponentially unlikely. High dimensionality becomes an asset: random projections behave more predictably as the dimension grows.
+  </div>
+
+  <p>This is the foundational geometric fact. If \(u\) is uniform on the sphere \(\mathbb{S}^{d-1}\) and \(x\) is fixed, then the scalar projection \(\langle u, x \rangle\) has a sharply concentrated distribution. For large \(d\), it is well approximated by a Gaussian with variance \(\|x\|^2/d\):</p>
+
+  <div class="thm">
+    <span class="tlabel">Concentration on the sphere · asymptotic Gaussian + exact tail bound</span>
+    \(\langle u, x \rangle \;\approx\; \mathcal{N}\!\left(0,\,\frac{\|x\|^2}{d}\right)\)
+    <br><br>
+    Standard spherical concentration gives a subgaussian tail of the form \(\;\mathbb{P}\!\left(\left|\langle u,x\rangle\right| > \varepsilon\right) \leq 2\exp\!\left(-c\,\frac{d\,\varepsilon^2}{\|x\|^2}\right)\) for an absolute constant \(c>0\).
+  </div>
+
+  <p>The tail probability decays <em>exponentially</em> in \(d\). A deviation that is a 10% mistake in 10D is essentially impossible in 1000D — the probability falls by a factor of \(e^{99}\). This is not intuitive from everyday experience; it is purely a high-dimensional phenomenon.</p>
+
+  <div class="viz" id="v1">
+    <div class="vtitle"><em>V1</em> How fast projections concentrate as dimension grows</div>
+    <div class="controls">
+      <label>Dimension d = <span class="v" id="v1dv">32</span><input type="range" id="v1d" min="4" max="512" value="32" step="4"></label>
+      <label>Samples <span class="v" id="v1nv">2000</span><input type="range" id="v1n" min="200" max="5000" value="2000" step="200"></label>
+    </div>
+    <div id="v1svg"></div>
+    <p class="vcap">Distribution of \(\langle u, x\rangle\) for random unit \(u\). Orange dashed lines: theoretical \(\pm\sigma = \pm\|x\|/\sqrt{d}\). <strong>Drag d up — watch the distribution collapse inward.</strong> The concentration is already visible at d=64; by d=256 the spread is tiny.</p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    Concentration suggests that most rotated coordinates \((Rx)_i\) fall in a predictable \(O(\|x\|/\sqrt d)\) range. That makes a shared scalar grid plausible and reduces the need for per-coordinate metadata, though practical implementations still depend on how norms are handled and what clipping level is chosen.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     02. CLT / BETA
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p2">
+  <div class="pillar-header"><span class="pillar-num">02</span><h2>CLT &amp; Beta Distribution of Rotated Coordinates</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    A key vector in an LLM might have most of its energy concentrated in just a few dimensions — like a microphone that mostly picks up bass and ignores treble. After a random rotation, that same information is spread much more evenly across coordinates. The coordinates are exchangeable, each has the same marginal law, and in high dimension they behave close to weakly dependent Gaussian samples. That is the regime where a single scalar quantiser becomes attractive.
+  </div>
+
+  <p>Each coordinate of \(Rx\) is a linear combination of all \(d\) original coordinates. By the Central Limit Theorem, sums of many weakly-correlated terms converge to Gaussian. More precisely, the normalised squared coordinates follow a Beta distribution that concentrates around equal energy per dimension:</p>
+
+  <div class="thm">
+    <span class="tlabel">Distribution of rotated coordinates · exact marginal for squares, asymptotic Gaussian for coordinates</span>
+    \((Rx)_i \;\overset{d}{\approx}\; \mathcal{N}\!\left(0,\;\frac{\|x\|^2}{d}\right) \quad \text{for large } d\)
+    <br><br>
+    Exact: \(\quad\frac{(Rx)_i^2}{\|x\|^2} \;\sim\; \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)\n    <br>Equivalent rescaling: \(\;\frac{d\,(Rx)_i^2}{\|x\|^2} \sim d\cdot \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
+    <br><br>
+    and coordinates \((Rx)_i\) are approximately independent.
+  </div>
+
+  <div class="viz" id="v2">
+    <div class="vtitle"><em>V2</em> Original vs rotated coordinate distributions</div>
+    <div class="controls">
+      <label>Dimension d = <span class="v" id="v2dv">32</span><input type="range" id="v2d" min="8" max="512" value="32" step="8"></label>
+    </div>
+    <div id="v2svg"></div>
+    <p class="vcap">Left (pink): first coordinate of a spiky vector across 3000 draws — heavy-tailed, non-Gaussian. Right (green): same coordinate after random rotation. Green curve: fitted Gaussian. <strong>Increase d — the fit tightens towards the theoretical Gaussian.</strong></p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    Near-i.i.d. Gaussian coordinates → the same Lloyd-Max quantiser grid is near-optimal for every dimension independently. No per-block scale factors, no codebook to store. At \(d=4096\) (a typical head dimension), the approximation is extremely tight.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     03. RATE-DISTORTION
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p3">
+  <div class="pillar-header"><span class="pillar-num">03</span><h2>Rate-Distortion Theory</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    There is a hard speed limit on compression — like the speed of light for information. Shannon proved that for a Gaussian signal, the minimum possible error at \(R\) bits per sample is exactly \(\sigma^2 \cdot 2^{-2R}\) — no scheme, no matter how clever, can do better. A simple scalar quantiser applied to a Gaussian is near-optimal in the high-rate regime; the classical \(\pi e/6\) factor corresponds to about 1.53 dB excess distortion in that asymptotic setting. The rotation step is meant to make coordinate marginals substantially more Gaussian-like so this scalar quantisation picture becomes a better approximation. Without rotation, the same quantiser can be materially worse.
+  </div>
+
+  <p>Shannon's rate-distortion theorem gives the fundamental compression limit. For a Gaussian source with variance \(\sigma^2\), the minimum MSE achievable at \(R\) bits per sample is:</p>
+
+  <div class="thm">
+    <span class="tlabel">Shannon rate-distortion bound (Gaussian source) · exact source bound</span>
+    \(D^*(R) = \sigma^2 \cdot 2^{-2R}\)
+    <br><br>
+    A scalar (per-sample) Lloyd-Max quantiser on a Gaussian source achieves:
+    \(\;D_{\text{scalar}} \leq \dfrac{\pi e}{6} \cdot D^*(R) \approx D^*(R) + 1.53\;\text{dB}\)
+    <br><br>
+    The \(\pi e/6\) gap is the classical high-rate scalar-quantisation constant for Gaussian-like sources; it should be read as an asymptotic benchmark rather than a finite-rate theorem for every setting.
+  </div>
+
+  <p>For a non-Gaussian source (spiky activation vectors), scalar quantisation can be far worse. The role of rotation is to move the coordinates toward the Gaussian regime where this constant-gap guarantee becomes a better approximation. That is a strong signal-level argument, though not by itself an end-to-end model-quality guarantee.</p>
+
+  <div class="viz" id="v3">
+    <div class="vtitle"><em>V3</em> Rate-distortion curves — Shannon bound vs quantiser performance</div>
+    <div class="controls">
+      <label>Source variance σ² = <span class="v" id="v3sv">1.0</span><input type="range" id="v3s" min="1" max="10" value="1" step="0.5"></label>
+    </div>
+    <div id="v3svg"></div>
+    <p class="vcap">Green: Gaussian rate-distortion curve \(D^*(R)=\sigma^2\cdot2^{-2R}\). Blue: scalar quantiser on a Gaussian-like source — the \(\pi e/6 \approx 1.53\,\text{dB}\) benchmark is the classical <em>high-rate</em> asymptotic gap. Pink: scalar quantiser on the original spiky distribution can be much worse, especially at low bit rates. The figure is illustrative, not a finite-rate guarantee.</p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    At 3.5 bits/dim, the scalar quantiser can operate near the Gaussian signal-level limit. That suggests little compression inefficiency remains at the coordinate level, even though downstream model accuracy still depends on how these errors propagate through attention.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     04. JOHNSON-LINDENSTRAUSS LEMMA
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p4">
+  <div class="pillar-header"><span class="pillar-num">04</span><h2>Johnson-Lindenstrauss Lemma</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    You have a million points in a million-dimensional space. The Johnson–Lindenstrauss lemma says they can be mapped into a much lower-dimensional space while approximately preserving all pairwise distances, with high probability over a random projection. The key message is that the target dimension depends logarithmically on the number of points and does not scale directly with the ambient dimension; the exact dimension still depends strongly on the desired distortion and constants in the bound.
+  </div>
+
+  <div class="thm">
+    <span class="tlabel">Johnson-Lindenstrauss lemma · high-probability embedding guarantee</span>
+    For any \(n\) points in \(\mathbb{R}^d\) and \(\varepsilon \in (0,1)\), there exists a linear map \(f: \mathbb{R}^d \to \mathbb{R}^k\) with \(k = O\!\left(\frac{\log n}{\varepsilon^2}\right)\) such that for all pairs \(i,j\):
+    \[(1-\varepsilon)\|x_i - x_j\|^2 \;\leq\; \|f(x_i)-f(x_j)\|^2 \;\leq\; (1+\varepsilon)\|x_i-x_j\|^2\]
+    And a random Gaussian matrix \(J\) with entries \(\sim\mathcal{N}(0,1/k)\) is such a map with high probability. Note: \(d\) does not appear in the bound on \(k\).
+  </div>
+
+  <p>One clean proof route combines three ingredients: norm concentration for one vector, a reduction from pairwise distances to norm preservation, and a union bound over all pairs. The demos below emphasise those ingredients, while Point 1 is best viewed as geometric intuition rather than a complete proof on its own.</p>
+
+  <!-- POINT 1 -->
+  <div class="point" id="jl-p1">
+    <div class="point-header">Point 1 — High dimensions are mostly "equator" → why a random projection works at all</div>
+    <p>Pick two random unit vectors in \(\mathbb{R}^d\). Their dot product is \(\langle u, v \rangle = \cos\theta\). In 2D, \(\theta\) is uniformly random — you'd expect angles ranging from 0° to 180°. In high dimensions, almost all random unit vectors are nearly orthogonal to each other: \(\theta \approx 90°\). The surface area of the sphere concentrates near the equatorial hyperplane relative to any fixed direction.</p>
+    <p>This near-orthogonality is why you can draw Gaussian matrix entries without careful design — random directions don't "pile up" on each other, so a random projection sees the data evenly from many independent directions.</p>
+    <div class="point-answers">→ Answers: why does a random projection work at all?</div>
+  </div>
+
+  <div class="viz" id="vj1">
+    <div class="vtitle"><em>JL-A</em> Angle between random unit vectors — converges to 90° in high dimensions</div>
+    <div class="controls">
+      <label>Dimension d = <span class="v" id="vj1dv">8</span><input type="range" id="vj1d" min="2" max="512" value="8" step="2"></label>
+      <label>Pairs <span class="v" id="vj1nv">2000</span><input type="range" id="vj1n" min="200" max="5000" value="2000" step="200"></label>
+    </div>
+    <div id="vj1svg"></div>
+    <p class="vcap">Histogram of angles (in degrees) between random pairs of unit vectors in \(\mathbb{R}^d\). <strong>Drag d up — the distribution collapses tightly onto 90°.</strong> In 2D it's uniform; by d=100 nearly every pair is almost orthogonal.</p>
+  </div>
+
+  <!-- POINT 2 -->
+  <div class="point" id="jl-p2">
+    <div class="point-header">Point 2 — Projection length concentrates → the (1±ε) accuracy guarantee</div>
+    <p>Project a vector onto \(k\) independent random Gaussian directions and compute the average squared projection. This is like asking \(k\) independent surveyors to estimate the same length — the average concentrates around the truth as \(k\) grows. Formally, \(\|Jx\|^2\) is a scaled chi-squared random variable with \(k\) degrees of freedom, and its relative deviation falls within \(\pm\varepsilon\) of \(\|x\|^2\) with probability at least:</p>
+    \[\mathbb{P}\!\left(\left|\|Jx\|^2 - \|x\|^2\right| > \varepsilon\|x\|^2\right) \;\leq\; 2\exp\!\left(-\frac{k\varepsilon^2}{4}\right)\]
+    <p>This is the core inequality of the proof — the actual distance-preservation guarantee for a single pair.</p>
+    <div class="point-answers">→ Answers: how accurate is the projection for one pair?</div>
+  </div>
+
+  <div class="viz" id="vj2">
+    <div class="vtitle"><em>JL-B</em> Distribution of projected distance ratio ‖Jx−Jy‖²/‖x−y‖² for one pair</div>
+    <div class="controls">
+      <label>Projection dim k = <span class="v" id="vj2kv">16</span><input type="range" id="vj2k" min="4" max="256" value="16" step="4"></label>
+      <label>ε bound <span class="v" id="vj2ev">0.3</span><input type="range" id="vj2e" min="0.05" max="0.9" value="0.3" step="0.05"></label>
+    </div>
+    <div id="vj2svg"></div>
+    <p class="vcap">Each sample: one random projection matrix \(J\). X-axis: ratio of projected to true squared distance (should be 1.0 if perfect). Orange lines: \(1\pm\varepsilon\) bounds. <strong>Increase k — the distribution collapses around 1.</strong> The fraction outside the bounds matches the theoretical bound.</p>
+  </div>
+
+  <!-- POINT 3 -->
+  <div class="point" id="jl-p3">
+    <div class="point-header">Point 3 — Union bound over n² pairs → the k = O(log n / ε²) dimension count</div>
+    <p>For \(n\) points there are \(\binom{n}{2} \approx n^2/2\) pairs. We need <em>every</em> pair to stay within \((1\pm\varepsilon)\). From Point 2, each pair fails with probability \(\leq 2e^{-k\varepsilon^2/4}\). By the union bound, the probability that <em>any</em> pair fails is at most:</p>
+    \[\frac{n^2}{2} \cdot 2e^{-k\varepsilon^2/4} = n^2 \cdot e^{-k\varepsilon^2/4}\]
+    <p>Set this \(\leq \delta\) (say \(\delta = 0.01\)) and solve for \(k\):</p>
+    \[k \;\geq\; \frac{4}{\varepsilon^2}\ln\!\frac{n^2}{\delta} = \frac{8\log n}{\varepsilon^2} + \frac{4\log(1/\delta)}{\varepsilon^2} = O\!\left(\frac{\log n}{\varepsilon^2}\right)\]
+    <p>The \(\log n\) comes from surviving \(n^2\) pairs. The \(1/\varepsilon^2\) comes from Point 2's concentration rate. <strong>The original dimension \(d\) never appears</strong> — it is absorbed by the normalisation of \(J\)'s entries.</p>
+    <div class="point-answers">→ Answers: how many projection dimensions k do you need?</div>
+  </div>
+
+  <div class="viz" id="vj3">
+    <div class="vtitle"><em>JL-C</em> Union bound calculator — required k for n points at accuracy ε</div>
+    <div class="controls">
+      <label>Points n = <span class="v" id="vj3nv">1000</span><input type="range" id="vj3n" min="10" max="100000" value="1000" step="100"></label>
+      <label>Accuracy ε = <span class="v" id="vj3ev">0.10</span><input type="range" id="vj3e" min="0.05" max="0.5" value="0.10" step="0.01"></label>
+    </div>
+    <div id="vj3svg"></div>
+    <div class="stat-row" id="vj3stats"></div>
+    <p class="vcap">X-axis: projection dimension k. Green curve: total failure probability = n²·e^(−kε²/4). Orange line: 1% threshold. <strong>The required \(k\) grows as \(\log(n)/\varepsilon^2\). For \(n=1,000,000\) and \(\varepsilon=0.1\), the simple union-bound estimate shown here lands in the tens of thousands of dimensions rather than a few hundred; sharper constants can improve this, but not to \(\sim 400\) under the displayed bound.</strong></p>
+  </div>
+
+  <h3>The three facts compose into the lemma</h3>
+  <p>The lemma is exactly these three statements in sequence:</p>
+  <ul>
+    <li><strong>[Point 1]</strong> A random Gaussian matrix is a valid candidate — random directions are nearly orthogonal, so the map doesn't wildly distort the data.</li>
+    <li><strong>[Point 2]</strong> For any single pair, the projection preserves their distance within \((1\pm\varepsilon)\) with probability \(\geq 1 - 2e^{-k\varepsilon^2/4}\).</li>
+    <li><strong>[Point 3]</strong> Choosing \(k = O(\log n / \varepsilon^2)\) makes the failure probability summed over all \(n^2\) pairs go below any fixed \(\delta\).</li>
+  </ul>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    JL explains why a shared random projection can preserve enough geometry for downstream estimation. It does not by itself prove that one sign bit per row is sufficient, and it should not be used as the main justification for the one-bit residual estimator. Its role here is motivational: random projections can preserve geometry surprisingly well, while the actual one-bit correction argument comes from the arc-cosine identity and the estimator analysis below.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     05. ARC-COSINE
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p5">
+  <div class="pillar-header"><span class="pillar-num">05</span><h2>Arc-Cosine Identity for Gaussian Projections</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    Flip a coin whose bias is determined by the angle between two vectors. The probability the coin comes up heads equals \(1 - \theta/\pi\), where \(\theta\) is the angle between the vectors. That identity is exact for Gaussian hyperplanes. A single random bit therefore carries angular information, and many such bits can be aggregated into a calibrated similarity estimate.
+  </div>
+
+  <p>This is the sharpest result in the pipeline: an exact identity, valid for any dimension \(d\) and any nonzero vectors \(r,q\). For a random Gaussian vector \(j \sim \mathcal{N}(0,I_d)\):</p>
+
+  <div class="thm">
+    <span class="tlabel">Arc-cosine identity (exact, any d)</span>
+    \(\mathbb{P}\!\left(\mathrm{sign}(j^\top r) = \mathrm{sign}(j^\top q)\right) = 1 - \frac{\theta(r,q)}{\pi}\)
+    <br><br>
+    where \(\theta(r,q) = \arccos\!\left(\frac{\langle r,q\rangle}{\|r\|\|q\|}\right)\). And the key mixed expectation:
+    <br><br>
+    \(\mathbb{E}\!\left[\mathrm{sign}(j^\top r)\cdot(j^\top q)\right] = \sqrt{\dfrac{2}{\pi}}\,\dfrac{\langle r,\,q\rangle}{\|r\|}\)
+  </div>
+
+  <p>The second identity makes Stage 2 work. Store \(\mathrm{sign}(Jr)\) (one bit per row of \(J\)). At query time, compute \(J_i^\top q\) from the same shared seed, multiply, and average. The result is proportional to \(\langle r, q\rangle\), with a known calibration factor and finite-sample variance.</p>
+  <p><em>Proof sketch:</em> Let \(a = j^\top r/\|r\|\) and write \(j^\top q = \rho\|q\| a + \epsilon\) where \(\rho=\cos\theta\) and \(\epsilon\perp a\). Then \(\mathbb{E}[\mathrm{sign}(a)\cdot j^\top q] = \rho\|q\|\mathbb{E}[|a|] = \rho\|q\|\sqrt{2/\pi}\).</p>
+
+  <div class="note">
+    <span class="nlabel">Calibration note</span>
+    The mixed expectation is proportional to \(\langle r,q\rangle\), not equal to it directly. Multiplying the sample average by \(\sqrt{\pi/2}\,\|r\|\) removes the known factor. That distinction matters when calling the estimator “unbiased.”
+  </div>
+
+  <div class="viz" id="v5">
+    <div class="vtitle"><em>V5</em> Arc-cosine identity — theoretical curve vs empirical sign-agreement rate</div>
+    <div class="controls">
+      <label>Samples per angle <span class="v" id="v5sv">1000</span><input type="range" id="v5s" min="200" max="4000" value="1000" step="200"></label>
+    </div>
+    <div id="v5svg"></div>
+    <p class="vcap">Green curve: exact formula \(p(\theta)=1-\theta/\pi\). Blue dots: empirical sign-agreement frequency at 20 equally-spaced angles using random Gaussian projections. <strong>The agreement is exact in expectation</strong> — more samples = dots collapse onto the curve.</p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">What this buys you in Stage 2</span>
+    After rescaling by the known factor \(\sqrt{\pi/2}\,\|r\|\), this gives an unbiased estimator of \(\langle r, q\rangle\). In practice, Stage 2 is best understood as a calibrated correction term: the rescaled estimator has the correct mean, and its accuracy improves with the number of projection rows.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     06. LAW OF LARGE NUMBERS
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p6">
+  <div class="pillar-header"><span class="pillar-num">06</span><h2>Law of Large Numbers — Variance Decay</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    You are trying to estimate a building's height. One estimate from a passerby: noisy. Ten estimates averaged: better. A hundred: accurate. Each projection row in Stage 2 is one noisy but calibrated measurement of the residual inner product. Average enough of them and the estimator concentrates around its expectation. The law of large numbers matters twice here: high dimension stabilises rotated coordinates, and larger sketch size stabilises the residual correction.
+  </div>
+
+  <div class="thm">
+    <span class="tlabel">QJL estimator — exact mean, variance decays as 1/m</span>
+    \(\hat{\ell}_m = \frac{1}{m}\sum_{i=1}^m \mathrm{sign}(j_i^\top r)\cdot(j_i^\top q)\)
+    <br><br>
+    \(\mathbb{E}[\hat{\ell}_m] = \sqrt{\tfrac{2}{\pi}}\,\dfrac{\langle r,q\rangle}{\|r\|} \qquad\text{(unbiased up to known constant)}\)
+    <br><br>
+    \(\mathrm{Var}[\hat{\ell}_m] = \dfrac{C}{m} \qquad\text{(shrinks as }1/m\text{, by LLN)}\)
+  </div>
+
+  <div class="viz" id="v6">
+    <div class="vtitle"><em>V6</em> QJL estimator variance decays as 1/m (log-log scale)</div>
+    <div class="controls">
+      <label>Trials per point <span class="v" id="v6tv">500</span><input type="range" id="v6t" min="100" max="2000" value="500" step="100"></label>
+    </div>
+    <div id="v6svg"></div>
+    <p class="vcap">Blue: empirical variance of \(\hat\ell_m\) vs number of sign bits \(m\). Orange: \(1/m\) reference line. Log-log scale so slope = −1 if variance ∝ 1/m. <strong>The slope matches theory.</strong> This tells you exactly how many sign bits you need for a given accuracy target.</p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    TurboQuant can devote a small auxiliary sketch to the residual because Stage 1 has already removed most of the signal energy. The required number of sign rows is therefore a variance-budget question: more rows reduce noise like \(1/m\), but the right operating point is ultimately empirical.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     07. DATA-OBLIVIOUSNESS
+═══════════════════════════════════════════ -->
+<div class="pillar" id="p7">
+  <div class="pillar-header"><span class="pillar-num">07</span><h2>Data-Obliviousness &amp; Shared Randomness</h2></div>
+
+  <div class="plain">
+    <span class="plabel">Intuition</span>
+    Two people can agree in advance on a shared recipe — say, a random seed — and later use it independently without further communication. TurboQuant uses this idea: \(R\) and \(J\) are regenerated from shared randomness rather than stored per vector. That does not make them literally free in every systems sense, but it does mean their description cost can be amortised across many vectors instead of paid repeatedly.
+  </div>
+
+  <p>Because \(R\) and \(J\) are drawn independently of any single input \(x\), the same transforms can be reused across vectors. The sign sketch has a fixed alphabet \(\{-1,+1\}^m\), while the quantised rotated coordinates can often be described with shared grid parameters plus a small amount of norm information.</p>
+
+  <div class="thm">
+    <span class="tlabel">What must be stored per KV vector</span>
+    \(\underbrace{\mathrm{quant}(Rx)}_{b\;\text{bits/dim}} \;\|\; \underbrace{\mathrm{sign}(Jr)}_{1\;\text{bit/dim}} \;\|\; \underbrace{\|x\|}_{\text{1 scalar}}\)
+    <br><br>
+    \(R,\, J\): stored once as a random seed — \(O(1)\) bytes total regardless of model size or context length.
+  </div>
+
+  <div class="viz" id="v7">
+    <div class="vtitle"><em>V7</em> Storage breakdown — TurboQuant vs data-dependent schemes</div>
+    <div id="v7svg"></div>
+    <p class="vcap"><span style="color:var(--green)">■</span> Stored per KV vector (pure signal). <span style="color:var(--blue)">■</span> Regenerated from shared seed (zero cost per vector). <span style="color:var(--orange)">■</span> Per-vector overhead in data-dependent schemes. TurboQuant eliminates orange entirely.</p>
+  </div>
+
+  <div class="conn">
+    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
+    The systems appeal is that shared randomness reduces per-vector metadata. At aggressive bitrates, saving even a fraction of a bit per dimension matters. The exact memory win versus alternative schemes depends on implementation details, but the direction of the advantage is clear: fewer per-vector side parameters means a larger share of memory goes to signal itself.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DEPENDENCY CHAIN
+═══════════════════════════════════════════ -->
+<div class="chain-section" id="chain">
+  <h2 style="font-family:var(--serif);font-size:1.9rem;color:var(--head);margin-bottom:.5rem">How They Chain Together</h2>
+  <p style="color:var(--dim);margin-bottom:1.5rem">None of these are new mathematics. The elegance of TurboQuant is composing seven classical results in exactly the right order.</p>
+  <div class="viz">
+    <div class="vtitle"><em>Chain</em> Logical dependency graph</div>
+    <div id="chainsvg"></div>
+  </div>
+</div>
+
+<div class="chain-section refs" id="refs">
+  <h2 style="font-family:var(--serif);font-size:1.9rem;color:var(--head);margin-bottom:.5rem">References &amp; provenance</h2>
+  <p style="color:var(--dim);margin-bottom:1rem">These are the classical results the explainer leans on. Listing them explicitly makes it easier to distinguish established theorems from TurboQuant-specific interpretation.</p>
+  <ul>
+    <li><strong>Spherical concentration / Lévy-type phenomena.</strong> Standard high-dimensional probability results for random points on the sphere and Lipschitz observables.</li>
+    <li><strong>Coordinate laws on the sphere.</strong> For \(u\sim\mathrm{Unif}(\mathbb S^{d-1})\), the squared coordinate \(u_i^2\) has a Beta distribution; Gaussian approximations emerge as \(d\to\infty\).</li>
+    <li><strong>Shannon rate-distortion theory.</strong> For a Gaussian source, \(D^*(R)=\sigma^2 2^{-2R}\) is exact.</li>
+    <li><strong>High-rate scalar quantisation.</strong> The \(\pi e/6\) constant is the classical asymptotic gap between optimal scalar quantisation and the Gaussian rate-distortion limit.</li>
+    <li><strong>Johnson–Lindenstrauss embeddings.</strong> Random projections preserve pairwise geometry with target dimension \(O(\log n/\varepsilon^2)\).</li>
+    <li><strong>Random hyperplane / arc-cosine identity.</strong> Gaussian sign projections recover angular similarity exactly in expectation.</li>
+    <li><strong>Monte Carlo variance scaling.</strong> Averaging independent rows drives estimator variance down like \(1/m\).</li>
+  </ul>
+</div>
+
+</main>
+
+<footer><div class="wrap"><p>TurboQuant — mathematical foundations explainer · visualisations use simulated data · wording distinguishes exact identities from high-dimensional approximations.</p></div></footer>
+
+<script>
+// ── utils ────────────────────────────────────────────────
+function randn(){const u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function dot(a,b){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s}
+function norm(a){return Math.sqrt(dot(a,a))}
+function randUnit(d){const v=Array.from({length:d},randn),n=norm(v);return v.map(x=>x/n)}
+function cw(id){return document.getElementById(id).parentElement.clientWidth||760}
+const C={green:'#7fffb2',pink:'#ff7eb3',orange:'#ffaa5e',blue:'#7eb8ff',purple:'#c084fc',dim:'#6a6a88',border:'#1e1e30',bg:'#0a0a0f',bg2:'#0f0f1a',text:'#c8c8d8',gold:'#f5c842'};
+const MO='JetBrains Mono,monospace';
+function axs(a){a.selectAll('text').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO);a.selectAll('line,path').attr('stroke',C.border)}
+
+function drawHist(g,data,w,h,col,opts={}){
+  const ext=d3.extent(data);const pad=(ext[1]-ext[0])*.06||0.5;
+  const xd=[ext[0]-pad,ext[1]+pad];
+  const x=d3.scaleLinear().domain(xd).range([0,w]);
+  const bins=d3.bin().domain(xd).thresholds(opts.bins||40)(data);
+  const dn=b=>b.length/data.length/Math.max(1e-9,b.x1-b.x0);
+  const ym=d3.max(bins,dn);
+  const y=d3.scaleLinear().domain([0,ym*1.2]).range([h,0]);
+  g.append('g').attr('transform',`translate(0,${h})`).call(d3.axisBottom(x).ticks(5).tickSize(3)).call(axs);
+  g.append('g').call(d3.axisLeft(y).ticks(4).tickSize(3)).call(axs);
+  g.selectAll('rect.b').data(bins).join('rect').attr('class','b')
+    .attr('x',d=>x(d.x0)+1).attr('width',d=>Math.max(0,x(d.x1)-x(d.x0)-1))
+    .attr('y',d=>y(dn(d))).attr('height',d=>h-y(dn(d)))
+    .attr('fill',col).attr('opacity',.45);
+  if(opts.gauss){const mu=d3.mean(data),sig=d3.deviation(data);const pts=d3.range(xd[0],xd[1],(xd[1]-xd[0])/120);
+    g.append('path').datum(pts).attr('d',d3.line().x(d=>x(d)).y(d=>y(Math.exp(-((d-mu)**2)/(2*sig**2))/(sig*Math.sqrt(2*Math.PI))))).attr('fill','none').attr('stroke',C.green).attr('stroke-width',1.8).attr('opacity',.85)}
+  return {x,y};
+}
+
+// ── V1 Concentration ────────────────────────────────────
+(function(){
+  const id='v1svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=230,M={t:20,r:16,b:38,l:42};const iH=H-M.t-M.b;const iW=w-M.l-M.r;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  const xfix=Array.from({length:512},randn);const xn=norm(xfix);const xv=xfix.map(z=>z/xn);
+  function render(){
+    g.selectAll('*').remove();
+    const d=+document.getElementById('v1d').value;const n=+document.getElementById('v1n').value;
+    document.getElementById('v1dv').textContent=d;document.getElementById('v1nv').textContent=n;
+    const xd=xv.slice(0,d);const xdn=norm(xd);const xn2=xd.map(z=>z/xdn);
+    const projs=Array.from({length:n},()=>dot(randUnit(d),xn2));
+    const {x}=drawHist(g,projs,iW,iH,C.blue,{bins:50});
+    const s=1/Math.sqrt(d);
+    [-s,s].forEach(v=>{g.append('line').attr('x1',x(v)).attr('x2',x(v)).attr('y1',0).attr('y2',iH).attr('stroke',C.orange).attr('stroke-width',1.5).attr('stroke-dasharray','4,3')});
+    g.append('text').attr('x',x(s)+4).attr('y',14).attr('fill',C.orange).attr('font-size',9).attr('font-family',MO).text('±1/√d');
+    g.append('text').attr('x',iW).attr('y',14).attr('text-anchor','end').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text(`σ=${s.toFixed(4)}`);
+  }
+  document.getElementById('v1d').addEventListener('input',render);document.getElementById('v1n').addEventListener('input',render);render();
+})();
+
+// ── V2 CLT/Beta ─────────────────────────────────────────
+(function(){
+  const id='v2svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=230,M={t:20,r:16,b:38,l:42};const iH=H-M.t-M.b;
+  const panW=(w-M.l-M.r)/2-10;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const gL=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  const gR=svg.append('g').attr('transform',`translate(${M.l+panW+20},${M.t})`);
+  svg.append('line').attr('x1',M.l+panW+10).attr('x2',M.l+panW+10).attr('y1',M.t).attr('y2',H-M.b).attr('stroke',C.border).attr('stroke-width',1);
+  ['original x₀','rotated (Rx)₀'].forEach((lbl,i)=>{
+    svg.append('text').attr('x',M.l+(i===0?panW/2:panW+20+panW/2)).attr('y',H-4).attr('text-anchor','middle').attr('fill',i===0?C.pink:C.green).attr('font-size',10).attr('font-family',MO).text(lbl)});
+  function spiky(d){const x=new Array(d).fill(0);const nd=Math.max(1,Math.floor(d*.1));for(let i=0;i<nd;i++)x[i]=randn()*3*(Math.random()<.5?1:-1);for(let i=nd;i<d;i++)x[i]=randn()*.25;return x}
+  function render(){
+    gL.selectAll('*').remove();gR.selectAll('*').remove();
+    const d=+document.getElementById('v2d').value;document.getElementById('v2dv').textContent=d;
+    const N=3000,orig=[],rot=[];
+    for(let i=0;i<N;i++){const x=spiky(d);orig.push(x[0]);rot.push(dot(randUnit(d),x))}
+    drawHist(gL,orig,panW,iH,C.pink,{bins:40});drawHist(gR,rot,panW,iH,C.green,{bins:40,gauss:true});
+  }
+  document.getElementById('v2d').addEventListener('input',render);render();
+})();
+
+// ── V3 Rate-distortion ──────────────────────────────────
+(function(){
+  const id='v3svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=240,M={t:20,r:130,b:40,l:55};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  function render(){
+    g.selectAll('*').remove();
+    const s2=+document.getElementById('v3s').value;document.getElementById('v3sv').textContent=s2.toFixed(1);
+    const Rs=d3.range(0.25,5,.04);
+    const Dopt=Rs.map(R=>s2*Math.pow(2,-2*R));
+    const Dscal=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6);
+    const Dspik=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6*(1+2.8*Math.exp(-R*.8)));
+    const allD=[...Dopt,...Dscal,...Dspik];
+    const x=d3.scaleLinear().domain([0.25,5]).range([0,iW]);
+    const y=d3.scaleLog().domain([d3.min(allD)*.7,d3.max(allD)*1.3]).range([iH,0]);
+    g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(x).ticks(6).tickSize(3)).call(axs);
+    g.append('g').call(d3.axisLeft(y).ticks(5,'~e').tickSize(3)).call(axs);
+    g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('bits per dimension (R)');
+    function line(pts,col,label,dash){
+      g.append('path').datum(pts).attr('d',d3.line().x(d=>x(d[0])).y(d=>y(d[1])).curve(d3.curveCatmullRom)).attr('fill','none').attr('stroke',col).attr('stroke-width',1.8).attr('stroke-dasharray',dash||'none');
+      const last=pts[pts.length-1];
+      g.append('text').attr('x',x(last[0])+6).attr('y',y(last[1])+4).attr('fill',col).attr('font-size',9.5).attr('font-family',MO).text(label);}
+    line(Rs.map((R,i)=>[R,Dopt[i]]),C.green,'Shannon bound');
+    line(Rs.map((R,i)=>[R,Dscal[i]]),C.blue,'Scalar (post-rotation)','5,3');
+    line(Rs.map((R,i)=>[R,Dspik[i]]),C.pink,'Scalar (spiky, no rotation)','3,2');
+    const mr=2.2,y1=s2*Math.pow(2,-2*mr),y2=y1*Math.PI*Math.E/6;
+    g.append('line').attr('x1',x(mr)).attr('x2',x(mr)).attr('y1',y(y1)).attr('y2',y(y2)).attr('stroke',C.orange).attr('stroke-width',1).attr('stroke-dasharray','2,2');
+    g.append('text').attr('x',x(mr)+4).attr('y',(y(y1)+y(y2))/2+4).attr('fill',C.orange).attr('font-size',9).attr('font-family',MO).text('πe/6≈1.53dB');
+  }
+  document.getElementById('v3s').addEventListener('input',render);render();
+})();
+
+// ── JL-A Equator (angle distribution) ──────────────────
+(function(){
+  const id='vj1svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=230,M={t:20,r:16,b:38,l:42};const iH=H-M.t-M.b;const iW=w-M.l-M.r;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  function render(){
+    g.selectAll('*').remove();
+    const d=+document.getElementById('vj1d').value;const n=+document.getElementById('vj1n').value;
+    document.getElementById('vj1dv').textContent=d;document.getElementById('vj1nv').textContent=n;
+    const angles=Array.from({length:n},()=>{const a=randUnit(d),b=randUnit(d);return Math.acos(Math.max(-1,Math.min(1,dot(a,b))))*180/Math.PI});
+    const {x}=drawHist(g,angles,iW,iH,C.purple,{bins:50});
+    g.append('line').attr('x1',x(90)).attr('x2',x(90)).attr('y1',0).attr('y2',iH).attr('stroke',C.green).attr('stroke-width',2);
+    g.append('text').attr('x',x(90)+4).attr('y',14).attr('fill',C.green).attr('font-size',10).attr('font-family',MO).text('90°');
+    g.append('text').attr('x',iW).attr('y',14).attr('text-anchor','end').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text(`mean=${d3.mean(angles).toFixed(1)}°`);
+  }
+  document.getElementById('vj1d').addEventListener('input',render);document.getElementById('vj1n').addEventListener('input',render);render();
+})();
+
+// ── JL-B Projected distance concentration ───────────────
+(function(){
+  const id='vj2svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=230,M={t:20,r:16,b:38,l:42};const iH=H-M.t-M.b;const iW=w-M.l-M.r;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  const DIM=256;
+  const xa=Array.from({length:DIM},randn),xb=Array.from({length:DIM},randn);
+  const diff=xa.map((v,i)=>v-xb[i]);const trueSq=dot(diff,diff);
+  function render(){
+    g.selectAll('*').remove();
+    const k=+document.getElementById('vj2k').value;const eps=+document.getElementById('vj2e').value;
+    document.getElementById('vj2kv').textContent=k;document.getElementById('vj2ev').textContent=eps.toFixed(2);
+    const N=2000;const ratios=[];
+    for(let t=0;t<N;t++){
+      const J=Array.from({length:k},()=>Array.from({length:DIM},()=>randn()/Math.sqrt(k)));
+      const Jd=J.map(row=>dot(row,diff));const projSq=dot(Jd,Jd);ratios.push(projSq/trueSq);}
+    const {x}=drawHist(g,ratios,iW,iH,C.blue,{bins:50});
+    [1-eps,1+eps].forEach(v=>{g.append('line').attr('x1',x(v)).attr('x2',x(v)).attr('y1',0).attr('y2',iH).attr('stroke',C.orange).attr('stroke-width',1.5).attr('stroke-dasharray','4,3')});
+    g.append('line').attr('x1',x(1)).attr('x2',x(1)).attr('y1',0).attr('y2',iH).attr('stroke',C.green).attr('stroke-width',1.5);
+    const outside=ratios.filter(r=>r<1-eps||r>1+eps).length/N;
+    g.append('text').attr('x',iW).attr('y',14).attr('text-anchor','end').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text(`outside ε: ${(outside*100).toFixed(1)}%`);
+  }
+  document.getElementById('vj2k').addEventListener('input',render);document.getElementById('vj2e').addEventListener('input',render);render();
+})();
+
+// ── JL-C Union bound calculator ─────────────────────────
+(function(){
+  const id='vj3svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=220,M={t:20,r:20,b:40,l:60};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  function render(){
+    g.selectAll('*').remove();
+    const n=+document.getElementById('vj3n').value;const eps=+document.getElementById('vj3e').value;
+    document.getElementById('vj3nv').textContent=n;document.getElementById('vj3ev').textContent=eps.toFixed(2);
+    const pairs=n*(n-1)/2;const kReq=Math.ceil(8*Math.log(n)/eps**2);
+    const ks=d3.range(1,Math.max(kReq*2,50));
+    const failProb=ks.map(k=>Math.min(1,pairs*2*Math.exp(-k*eps**2/4)));
+    const xsc=d3.scaleLog().domain([1,d3.max(ks)]).range([0,iW]);
+    const ysc=d3.scaleLog().domain([1e-6,2]).range([iH,0]);
+    g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(xsc).ticks(6,'~s').tickSize(3)).call(axs);
+    g.append('g').call(d3.axisLeft(ysc).ticks(5,'~e').tickSize(3)).call(axs);
+    g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('projection dimension k');
+    g.append('text').attr('x',-38).attr('y',iH/2).attr('transform',`rotate(-90,-38,${iH/2})`).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('total failure prob');
+    const validFail=failProb.filter(p=>p>1e-6&&p<=2);const validK=ks.slice(0,validFail.length);
+    g.append('path').datum(validK.map((k,i)=>[k,validFail[i]])).attr('d',d3.line().x(d=>xsc(d[0])).y(d=>ysc(d[1])).defined(d=>d[1]>1e-6&&d[0]>=1)).attr('fill','none').attr('stroke',C.green).attr('stroke-width',2);
+    g.append('line').attr('x1',0).attr('x2',iW).attr('y1',ysc(0.01)).attr('y2',ysc(0.01)).attr('stroke',C.orange).attr('stroke-width',1.5).attr('stroke-dasharray','5,3');
+    g.append('text').attr('x',6).attr('y',ysc(0.01)-5).attr('fill',C.orange).attr('font-size',9).attr('font-family',MO).text('1% threshold');
+    if(kReq<=d3.max(ks)){
+      g.append('line').attr('x1',xsc(kReq)).attr('x2',xsc(kReq)).attr('y1',0).attr('y2',iH).attr('stroke',C.purple).attr('stroke-width',1.5).attr('stroke-dasharray','3,2');
+      g.append('text').attr('x',xsc(kReq)+4).attr('y',30).attr('fill',C.purple).attr('font-size',9).attr('font-family',MO).text(`k=${kReq}`);}
+    // stats
+    const statsEl=document.getElementById('vj3stats');statsEl.innerHTML='';
+    [{lbl:'n (points)',val:n.toLocaleString()},{lbl:'pairs',val:pairs.toLocaleString()},{lbl:'required k',val:kReq},{lbl:`k(ε=${eps.toFixed(2)})`,val:`8ln(n)/ε²`}].forEach(s=>{
+      const div=document.createElement('div');div.className='stat';div.innerHTML=`${s.lbl}: <span>${s.val}</span>`;statsEl.appendChild(div);});
+  }
+  document.getElementById('vj3n').addEventListener('input',render);document.getElementById('vj3e').addEventListener('input',render);render();
+})();
+
+// ── V5 Arc-cosine ────────────────────────────────────────
+(function(){
+  const id='v5svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=240,M={t:20,r:20,b:40,l:55};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  const D=64;const angles=d3.range(0,Math.PI+.01,Math.PI/19);
+  const x=d3.scaleLinear().domain([0,Math.PI]).range([0,iW]);
+  const y=d3.scaleLinear().domain([-.05,1.05]).range([iH,0]);
+  g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(x).tickValues([0,Math.PI/4,Math.PI/2,3*Math.PI/4,Math.PI]).tickFormat(d=>{const m={0:'0',1.5708:'π/2',3.1416:'π'};return m[+d.toFixed(4)]||''}).tickSize(3)).call(axs);
+  g.append('g').call(d3.axisLeft(y).ticks(5).tickSize(3)).call(axs);
+  g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('angle θ between r and q');
+  g.append('text').attr('x',-32).attr('y',iH/2).attr('transform',`rotate(-90,-32,${iH/2})`).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('P(sign agreement)');
+  const curve=d3.range(0,Math.PI+.01,.02).map(th=>({th,p:1-th/Math.PI}));
+  g.append('path').datum(curve).attr('d',d3.line().x(d=>x(d.th)).y(d=>y(d.p))).attr('fill','none').attr('stroke',C.green).attr('stroke-width',2);
+  g.append('text').attr('x',x(Math.PI*.28)).attr('y',y(.82)).attr('fill',C.green).attr('font-size',10).attr('font-family',MO).text('1 − θ/π  (exact)');
+  function render(){
+    g.selectAll('circle').remove();
+    const S=+document.getElementById('v5s').value;document.getElementById('v5sv').textContent=S;
+    const pts=angles.map(th=>{
+      const r=[1,0,...new Array(D-2).fill(0)];const q=[Math.cos(th),Math.sin(th),...new Array(D-2).fill(0)];
+      let agree=0;for(let i=0;i<S;i++){const j=Array.from({length:D},randn);if(Math.sign(dot(j,r))===Math.sign(dot(j,q)))agree++;}
+      return{th,p:agree/S}});
+    g.selectAll('circle').data(pts).join('circle').attr('cx',d=>x(d.th)).attr('cy',d=>y(d.p)).attr('r',5).attr('fill',C.blue).attr('stroke',C.border).attr('stroke-width',1).attr('opacity',.85);
+  }
+  document.getElementById('v5s').addEventListener('input',render);render();
+})();
+
+// ── V6 LLN variance ──────────────────────────────────────
+(function(){
+  const id='v6svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=240,M={t:20,r:40,b:40,l:60};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+  const D=64;const rv=Array.from({length:D},randn);const qv=Array.from({length:D},randn);const rn=norm(rv);
+  const ms=[2,4,8,16,32,64,128,256];
+  function qjl(m){let s=0;for(let i=0;i<m;i++){const j=Array.from({length:D},randn);s+=Math.sign(dot(j,rv))*(dot(j,qv));}return s/m}
+  function render(){
+    g.selectAll('*').remove();
+    const T=+document.getElementById('v6t').value;document.getElementById('v6tv').textContent=T;
+    const pts=ms.map(m=>{const e=Array.from({length:T},()=>qjl(m));return{m,v:d3.variance(e)}});
+    const xsc=d3.scaleLog().domain([ms[0]*.8,ms[ms.length-1]*1.3]).range([0,iW]);
+    const ysc=d3.scaleLog().domain([d3.min(pts,p=>p.v)*.4,d3.max(pts,p=>p.v)*2.5]).range([iH,0]);
+    g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(xsc).tickValues(ms).tickSize(3)).call(axs);
+    g.append('g').call(d3.axisLeft(ysc).ticks(5,'~e').tickSize(3)).call(axs);
+    g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('sign bits (m)');
+    const ref0=pts[0].v*ms[0];
+    g.append('path').datum(ms.map(m=>({m,v:ref0/m}))).attr('d',d3.line().x(d=>xsc(d.m)).y(d=>ysc(d.v))).attr('fill','none').attr('stroke',C.orange).attr('stroke-width',1.5).attr('stroke-dasharray','5,3');
+    g.append('text').attr('x',xsc(ms[ms.length-1])+6).attr('y',ysc(ref0/ms[ms.length-1])).attr('fill',C.orange).attr('font-size',10).attr('font-family',MO).text('1/m');
+    g.append('path').datum(pts).attr('d',d3.line().x(d=>xsc(d.m)).y(d=>ysc(d.v)).curve(d3.curveMonotoneX)).attr('fill','none').attr('stroke',C.blue).attr('stroke-width',2);
+    g.selectAll('circle').data(pts).join('circle').attr('cx',d=>xsc(d.m)).attr('cy',d=>ysc(d.v)).attr('r',4.5).attr('fill',C.blue).attr('stroke',C.border).attr('stroke-width',1);
+  }
+  document.getElementById('v6t').addEventListener('input',render);render();
+})();
+
+// ── V7 Storage diagram ───────────────────────────────────
+(function(){
+  const id='v7svg';const cont=document.getElementById(id);const w=cw(id);
+  const H=190;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  const cW=w/3;
+  const cols=[
+    {lbl:['TurboQuant','stored per vector'],col:C.green,items:['quant(Rx) → b bits/dim','sign(Jr)  → 1 bit/dim','‖x‖       → 1 scalar']},
+    {lbl:['Shared seed','(zero cost/vector)'],col:C.blue, items:['R  — rotation matrix','J  — Gaussian matrix','Quantiser grid']},
+    {lbl:['Competitors','per-vector overhead'],col:C.orange,items:['per-group scale factors','codebook entries (PQ)','calibration stats']},
+  ];
+  cols.forEach((c,ci)=>{
+    const cx=cW*ci+cW/2;
+    c.lbl.forEach((l,li)=>{svg.append('text').attr('x',cx).attr('y',20+li*15).attr('text-anchor','middle').attr('fill',c.col).attr('font-size',10.5).attr('font-weight','600').attr('font-family',MO).text(l)});
+    c.items.forEach((item,ii)=>{
+      const y=62+ii*38;
+      svg.append('rect').attr('x',cW*ci+8).attr('y',y-14).attr('width',cW-16).attr('height',28).attr('rx',4).attr('fill',c.col).attr('opacity',.1).attr('stroke',c.col).attr('stroke-width',.8);
+      svg.append('text').attr('x',cx).attr('y',y+5).attr('text-anchor','middle').attr('fill',c.col==='#ffaa5e'?C.orange:C.text).attr('font-size',9.5).attr('font-family',MO).text(item)});
+    if(ci>0)svg.append('line').attr('x1',cW*ci).attr('x2',cW*ci).attr('y1',8).attr('y2',H-8).attr('stroke',C.border).attr('stroke-width',1);
+  });
+})();
+
+// ── Dependency chain ─────────────────────────────────────
+(function(){
+  const id='chainsvg';const cont=document.getElementById(id);const w=cw(id);
+  const H=540;
+  const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
+  svg.append('defs').append('marker').attr('id','arr').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M0,-5L10,0L0,5').attr('fill',C.dim);
+  const bW=150,bH=44;
+  const nodes=[
+    {id:'com',lbl:['Concentration','of Measure'],     x:.5, y:.04,col:C.purple},
+    {id:'clt',lbl:['CLT / Beta','Distribution'],      x:.28,y:.18,col:C.blue},
+    {id:'rd', lbl:['Rate-Distortion','Theory'],        x:.72,y:.18,col:C.blue},
+    {id:'jl', lbl:['Johnson-Lindenstrauss','Lemma'],   x:.5, y:.38,col:C.blue},
+    {id:'arc',lbl:['Arc-Cosine','Identity'],           x:.5, y:.54,col:C.green},
+    {id:'lln',lbl:['Law of Large','Numbers'],          x:.5, y:.70,col:C.green},
+    {id:'do', lbl:['Data-Obliviousness','& Shared Seed'],x:.5,y:.84,col:C.green},
+    {id:'tq', lbl:['TurboQuant','near-optimal · unbiased · zero overhead'],x:.5,y:.96,col:C.orange},
+  ];
+  const edges=[['com','clt'],['com','jl'],['clt','jl'],['rd','jl'],['jl','arc'],['arc','lln'],['lln','do'],['do','tq'],['clt','tq'],['rd','tq']];
+  const nm=Object.fromEntries(nodes.map(n=>[n.id,n]));
+  const nx=n=>n.x*w;const ny=n=>n.y*H;
+  edges.forEach(([a,b])=>{
+    const na=nm[a],nb=nm[b];const dx=nx(nb)-nx(na),dy=ny(nb)-ny(na);const len=Math.sqrt(dx*dx+dy*dy);const ux=dx/len,uy=dy/len;
+    svg.append('line').attr('x1',nx(na)+ux*bW/2).attr('x2',nx(nb)-ux*(bW/2+8)).attr('y1',ny(na)+uy*bH/2+6).attr('y2',ny(nb)-uy*(bH/2+6)).attr('stroke',C.border).attr('stroke-width',1.2).attr('marker-end','url(#arr)');
+  });
+  nodes.forEach(n=>{
+    const x=nx(n),y=ny(n);
+    svg.append('rect').attr('x',x-bW/2).attr('y',y-bH/2).attr('width',bW).attr('height',bH).attr('rx',5).attr('fill',C.bg).attr('stroke',n.col).attr('stroke-width',1.5);
+    n.lbl.forEach((l,i,arr)=>{svg.append('text').attr('x',x).attr('y',y+(i-(arr.length-1)/2)*15+1).attr('text-anchor','middle').attr('fill',n.col).attr('font-size',10).attr('font-weight','600').attr('font-family',MO).text(l)});
+  });
+})();
+
+// ── KaTeX ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  renderMathInElement(document.body,{
+    delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],
+    throwOnError:false});
+});
+</script>
+</body>
+</html>
