@@ -279,11 +279,23 @@ function drawHist(g,data,w,h,col,opts={}){
 // ── Dependency chain ─────────────────────────────────────
 (function(){
   const id='chainsvg';const cont=document.getElementById(id);const w=cw(id);
-  const H=580;
+  const mobile=w<500;
+  const H=mobile?920:580;
   const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
   svg.append('defs').append('marker').attr('id','arr').attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0).attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto').append('path').attr('d','M0,-5L10,0L0,5').attr('fill',C.text);
   const bW=140,bH=44;
-  const nodes=[
+  const nodes=mobile?[
+    {id:'com',lbl:['Concentration','of Measure'],        x:.5, y:.04,col:C.purple},
+    {id:'clt',lbl:['Rotated','Coordinates'],              x:.5, y:.12,col:C.blue},
+    {id:'rd', lbl:['Compression','Floor'],                x:.5, y:.20,col:C.blue},
+    {id:'s1', lbl:['Stage 1','rotate + quantize'],        x:.5, y:.30,col:C.blue},
+    {id:'arc',lbl:['Arc-Cosine','Identity'],              x:.5, y:.42,col:C.green},
+    {id:'lln',lbl:['Law of Large','Numbers'],             x:.5, y:.50,col:C.green},
+    {id:'s2', lbl:['Stage 2','sign-bit correction'],      x:.5, y:.60,col:C.green},
+    {id:'jl', lbl:['Johnson-Lindenstrauss','Lemma'],      x:.5, y:.70,col:C.dim},
+    {id:'do', lbl:['Shared','Randomness'],                x:.5, y:.80,col:C.green},
+    {id:'tq', lbl:['TurboQuant','near-optimal · unbiased'],x:.5,y:.92,col:C.orange},
+  ]:[
     {id:'com',lbl:['Concentration','of Measure'],        x:.38, y:.08,col:C.purple},
     {id:'clt',lbl:['Rotated','Coordinates'],              x:.38, y:.22,col:C.blue},
     {id:'rd', lbl:['Compression','Floor'],                x:.38, y:.36,col:C.blue},
@@ -295,7 +307,8 @@ function drawHist(g,data,w,h,col,opts={}){
     {id:'jl', lbl:['Johnson-Lindenstrauss','Lemma'],      x:.78, y:.33,col:C.dim},
     {id:'tq', lbl:['TurboQuant','near-optimal · unbiased'],x:.5,y:.85,col:C.orange},
   ];
-  const edges=[['com','clt'],['clt','rd'],['rd','s1'],['arc','lln'],['lln','s2'],['do','s1'],['do','s2'],['s1','tq'],['s2','tq']];
+  const edges=mobile?[['com','clt'],['clt','rd'],['rd','s1'],['arc','lln'],['lln','s2'],['s1','tq'],['s2','tq'],['do','tq']]:
+    [['com','clt'],['clt','rd'],['rd','s1'],['arc','lln'],['lln','s2'],['do','s1'],['do','s2'],['s1','tq'],['s2','tq']];
   const dashedEdges=[['jl','s2']];
   const nm=Object.fromEntries(nodes.map(n=>[n.id,n]));
   const nx=n=>n.x*w;const ny=n=>n.y*H;
