@@ -160,7 +160,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
   <br><br>
   <strong style="color:var(--green)">Stage 1</strong> rotates the vector and rounds each coordinate to a small number of bits. This captures most of the signal but introduces some rounding error.
   <br><br>
-  <strong style="color:var(--blue)">Stage 2</strong> takes the leftover error from Stage 1 — which is approximately isotropic thanks to the random rotation, not the rounding — and projects it onto many random directions, storing just the sign (+1 or -1) of each. At query time, these bits provide a correction that brings the estimate closer to the true answer. Because Stage 1 already captured most of the signal, the leftover is small, so even a compact set of sign bits is enough.
+  <strong style="color:var(--blue)">Stage 2</strong> takes the leftover error from Stage 1, which is approximately isotropic due to the random rotation and projects it onto many random directions, storing just the sign (+1 or -1) of each. At query time, these bits provide a correction that brings the estimate closer to the true answer. Because Stage 1 already captured most of the signal, the leftover is small, so even a compact set of sign bits is enough.
   <br><br>
   Below are the seven classical results that make this work.
 </div>
