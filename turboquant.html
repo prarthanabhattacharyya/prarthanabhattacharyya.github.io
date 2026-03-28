@@ -1,9 +1,17 @@
+---
+layout: none
+permalink: /turboquant/
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TurboQuant: Mathematical Foundations</title>
+<title>The Maths Behind TurboQuant (ICLR 2026)</title>
+<meta name="description" content="Seven classical results from probability, information theory, and geometry that explain TurboQuant's KV-cache compression. Interactive visualisations included.">
+<meta property="og:title" content="The Maths Behind TurboQuant">
+<meta property="og:description" content="Seven classical results behind compressing KV-cache vectors to around 3 to 3.5 bits per dimension. Interactive D3 visualisations.">
+<meta property="og:type" content="article">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -19,12 +27,16 @@
   --mono:'JetBrains Mono',monospace; --serif:'Playfair Display',serif; --sans:'Inter',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);background-size:32px 32px;opacity:.15;pointer-events:none;z-index:0}
+
+/* reading progress bar */
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--green),var(--blue));z-index:999;width:0;transition:width .1s linear}
 .wrap{max-width:880px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
 
 /* hero */
-header{border-bottom:1px solid var(--border);padding:4.5rem 0 3.5rem;text-align:center}
+header{border-bottom:1px solid var(--border);padding:3rem 0 2.5rem;text-align:center}
 .tag{display:inline-block;font-family:var(--mono);font-size:.72rem;color:var(--green);border:1px solid var(--gdim);padding:.2em .8em;border-radius:2px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:1.4rem}
 h1{font-family:var(--serif);font-size:clamp(1.9rem,4.5vw,3.2rem);color:var(--head);line-height:1.15;margin-bottom:1rem}
 .sub{font-size:1rem;color:var(--dim);max-width:600px;margin:0 auto}
@@ -53,9 +65,10 @@ li{margin:.3rem 0}
 .algobox .alabel{display:block;font-family:var(--mono);font-size:.7rem;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem}
 .algobox ol{margin:0;padding-left:1.4rem;max-width:760px}
 .algobox li{margin:.55rem 0;line-height:1.5}
-.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;margin:1.5rem 0 0}
-.toc a{display:block;text-decoration:none;color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.8rem .9rem;font-size:.92rem}
-.toc a span{display:block;font-family:var(--mono);font-size:.68rem;color:var(--green);margin-bottom:.25rem;letter-spacing:.08em}
+div.toc{display:grid !important;grid-template-columns:repeat(4, 1fr) !important;gap:.7rem;margin:1.5rem auto 0;max-width:760px;text-align:left;border:2px solid red}
+div.toc a,div.toc a:visited,div.toc a:link{display:block !important;text-decoration:none !important;color:var(--text) !important;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.7rem .85rem;font-size:.88rem;transition:border-color .2s,transform .2s,box-shadow .2s}
+div.toc a:hover{border-color:var(--gdim) !important;transform:translateY(-2px);box-shadow:0 4px 16px rgba(127,255,178,.08)}
+div.toc a span{display:block !important;font-family:var(--mono);font-size:.68rem;color:var(--green) !important;margin-bottom:.2rem;letter-spacing:.08em}
 .refs{margin-top:1.6rem}
 .refs li{margin:.45rem 0;color:var(--dim)}
 .refs strong{color:var(--text)}
@@ -94,6 +107,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .stat{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:.5rem .9rem;font-family:var(--mono);font-size:.82rem}
 .stat span{color:var(--green);font-weight:600}
 
+/* entrance animations */
+.pillar,.chain-section{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.pillar.visible,.chain-section.visible{opacity:1;transform:translateY(0)}
+
+/* viz hover glow */
+.viz{transition:border-color .25s,box-shadow .25s}
+.viz:hover{border-color:var(--gdim);box-shadow:0 0 24px rgba(127,255,178,.05)}
+
+/* summary card hover */
+.summary-card{transition:border-color .2s,transform .2s}
+.summary-card:hover{border-color:var(--gdim);transform:translateY(-1px)}
+
 /* chain */
 .chain-section{padding:3.5rem 0}
 
@@ -107,41 +132,38 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 </style>
 </head>
 <body>
+<div id="progress-bar"></div>
 <header>
   <div class="wrap">
+    <span class="tag">ICLR 2026</span>
     <h1>The Maths Behind TurboQuant</h1>
-    <p class="sub">Classical results from probability, information theory, and geometry that explain why TurboQuant can compress KV-cache vectors aggressively while preserving the signal attention needs. Each section starts with intuition, then states the mathematics more carefully.</p>
+    <p class="sub">LLM inference is bottlenecked by the KV cache. TurboQuant compresses it to <strong style="color:var(--green)">around 3 to 3.5 bits per dimension</strong>, getting close to the theoretical best while needing only a single shared seed instead of per vector metadata.</p>
 
-    <div class="summary-grid">
-      <div class="summary-card"><span class="slabel">30-second view</span><p>Rotate the KV vector, quantise the rotated coordinates efficiently, then keep a compact sign sketch of the residual so query-time inner products can be corrected.</p></div>
-      <div class="summary-card"><span class="slabel">What is exact?</span><p>The arc-cosine identity, the Gaussian rate-distortion function, and the exact coordinate law on the sphere are exact. Several other statements are asymptotic or benchmark approximations.</p></div>
-      <div class="summary-card"><span class="slabel">What is the point?</span><p>This is not “no approximation.” It is approximation in the right coordinates, with concentration and variance control that make the compression useful inside attention.</p></div>
-    </div>
-
-    <div class="algobox">
-      <span class="alabel">TurboQuant in five steps</span>
-      <ol>
-        <li>Generate shared random operators \(R\) and \(J\) from a seed.</li>
-        <li>Rotate the KV vector: \(y = Rx\).</li>
-        <li>Quantise \(y\) coordinatewise with a fixed scalar grid to obtain Stage 1.</li>
-        <li>Form the residual \(r = x - R^\top \tilde y\), then store \(\mathrm{sign}(Jr)\) as Stage 2.</li>
-        <li>At query time, combine the Stage 1 reconstruction with a calibrated estimator from \(\mathrm{sign}(Jr)\) and \(Jq\) to approximate \(\langle x,q\rangle\).</li>
-      </ol>
-    </div>
-
-    <div class="toc">
-      <a href="#p1"><span>01</span>Concentration</a>
-      <a href="#p2"><span>02</span>Rotated coordinates</a>
-      <a href="#p3"><span>03</span>Rate-distortion</a>
-      <a href="#p4"><span>04</span>JL lemma</a>
-      <a href="#p5"><span>05</span>Arc-cosine</a>
-      <a href="#p6"><span>06</span>Variance decay</a>
-      <a href="#p7"><span>07</span>Shared randomness</a>
+    <p style="font-family:var(--mono);font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin:1.8rem 0 .7rem">Seven mathematical pillars</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin:1.5rem auto 0;max-width:760px;text-align:left">
+      <a href="#p1" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">01</span>Concentration</a>
+      <a href="#p2" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">02</span>Rotated coordinates</a>
+      <a href="#p3" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">03</span>Rate-distortion</a>
+      <a href="#p4" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">04</span>JL lemma</a>
+      <a href="#p5" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">05</span>Arc-cosine</a>
+      <a href="#p6" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">06</span>Law of Large Numbers</a>
+      <a href="#p7" style="display:block;text-decoration:none;color:#c8c8d8;background:#0f0f1a;border:1px solid #1e1e30;border-radius:6px;padding:.7rem .85rem;font-size:.88rem"><span style="display:block;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#7fffb2;margin-bottom:.2rem;letter-spacing:.08em">07</span>Shared randomness</a>
     </div>
   </div>
 </header>
 
 <main class="wrap">
+
+<div class="plain" style="margin-top:2.5rem;border-left-color:var(--blue)">
+  <span class="plabel" style="color:var(--blue)">How TurboQuant works</span>
+  TurboQuant compresses each KV vector in two stages using only a shared random seed.
+  <br><br>
+  <strong style="color:var(--green)">Stage 1</strong> rotates the vector and rounds each coordinate to a small number of bits. This captures most of the signal but introduces some rounding error.
+  <br><br>
+  <strong style="color:var(--blue)">Stage 2</strong> takes the leftover error from Stage 1 and projects it onto many random directions, storing just the sign (+1 or -1) of each. At query time, these bits provide a correction that brings the estimate closer to the true answer. Because Stage 1 already captured most of the signal, the leftover is small, so even a compact set of sign bits is enough.
+  <br><br>
+  Below are the seven classical results that make this work.
+</div>
 
 <!-- ═══════════════════════════════════════════
      01. CONCENTRATION OF MEASURE
@@ -151,19 +173,84 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    Imagine throwing a dart at a beach ball. In 2D, the dart could land anywhere. In 3D, slightly more surface area is near the equator. In very high dimension, most of the sphere lies close to an equatorial band relative to any fixed direction, and deviations away from that band become exponentially unlikely. High dimensionality becomes an asset: random projections behave more predictably as the dimension grows.
+    In low dimensions, a random direction on the sphere could point anywhere. In high dimensions, almost all of the sphere's surface area piles up near the equator relative to any fixed axis. The deviations decay exponentially in \(d\). Importantly, high dimensionality makes random quantities predictable.
+  </div>
+
+  <!-- Side-by-side equator concentration diagram -->
+  <div style="display:flex;justify-content:center;gap:2.5rem;margin:1.8rem 0;flex-wrap:wrap">
+    <!-- 2D -->
+    <div style="text-align:center">
+      <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="#2a2a3a" stroke-width="2"/>
+        <!-- equatorial band ~24% highlighted -->
+        <path d="M 70 10 A 60 60 0 0 1 130 70" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".3"/>
+        <path d="M 70 130 A 60 60 0 0 1 10 70" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".3"/>
+        <!-- equator band ±15° ≈ 24% of circumference -->
+        <path d="M 130 70 A 60 60 0 0 1 124.6 88.6" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 124.6 51.4 A 60 60 0 0 1 130 70" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 10 70 A 60 60 0 0 1 15.4 51.4" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 15.4 88.6 A 60 60 0 0 1 10 70" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/>
+        <!-- equator line -->
+        <line x1="10" y1="70" x2="130" y2="70" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+        <!-- axis arrow -->
+        <line x1="70" y1="130" x2="70" y2="10" stroke="var(--dim)" stroke-width="1" opacity=".4"/>
+        <polygon points="70,8 67,16 73,16" fill="var(--dim)" opacity=".4"/>
+      </svg>
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--dim);margin-top:.4rem">2D (circle)</div>
+      <div style="font-family:var(--mono);font-size:.68rem;color:var(--green)">spread out</div>
+    </div>
+    <!-- 10D -->
+    <div style="text-align:center">
+      <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="#2a2a3a" stroke-width="2"/>
+        <!-- more area near equator -->
+        <path d="M 70 10 A 60 60 0 0 1 124.6 51.4" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".2"/>
+        <path d="M 124.6 88.6 A 60 60 0 0 1 70 130" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".2"/>
+        <path d="M 70 130 A 60 60 0 0 1 15.4 88.6" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".2"/>
+        <path d="M 15.4 51.4 A 60 60 0 0 1 70 10" fill="none" stroke="#3a8f5a" stroke-width="3" opacity=".2"/>
+        <!-- wider equatorial band -->
+        <path d="M 130 70 A 60 60 0 0 1 115.7 100.4" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M 115.7 39.6 A 60 60 0 0 1 130 70" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M 10 70 A 60 60 0 0 1 24.3 39.6" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M 24.3 100.4 A 60 60 0 0 1 10 70" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="10" y1="70" x2="130" y2="70" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+        <line x1="70" y1="130" x2="70" y2="10" stroke="var(--dim)" stroke-width="1" opacity=".4"/>
+        <polygon points="70,8 67,16 73,16" fill="var(--dim)" opacity=".4"/>
+      </svg>
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--dim);margin-top:.4rem">10D (sphere)</div>
+      <div style="font-family:var(--mono);font-size:.68rem;color:var(--green)">mostly near equator</div>
+    </div>
+    <!-- 100D -->
+    <div style="text-align:center">
+      <svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="#2a2a3a" stroke-width="2"/>
+        <!-- almost entire circle is equator -->
+        <path d="M 130 70 A 60 60 0 0 1 70 130" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M 70 130 A 60 60 0 0 1 10 70" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M 10 70 A 60 60 0 0 1 70 10" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M 70 10 A 60 60 0 0 1 130 70" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round"/>
+        <!-- tiny non-equator caps at poles -->
+        <circle cx="70" cy="11" r="4" fill="#0a0a0f" stroke="var(--dim)" stroke-width="1" opacity=".6"/>
+        <circle cx="70" cy="129" r="4" fill="#0a0a0f" stroke="var(--dim)" stroke-width="1" opacity=".6"/>
+        <line x1="10" y1="70" x2="130" y2="70" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3,3" opacity=".5"/>
+        <line x1="70" y1="130" x2="70" y2="10" stroke="var(--dim)" stroke-width="1" opacity=".4"/>
+        <polygon points="70,8 67,16 73,16" fill="var(--dim)" opacity=".4"/>
+      </svg>
+      <div style="font-family:var(--mono);font-size:.75rem;color:var(--dim);margin-top:.4rem">100D</div>
+      <div style="font-family:var(--mono);font-size:.68rem;color:var(--green)">nearly all near equator</div>
+    </div>
   </div>
 
   <p>This is the foundational geometric fact. If \(u\) is uniform on the sphere \(\mathbb{S}^{d-1}\) and \(x\) is fixed, then the scalar projection \(\langle u, x \rangle\) has a sharply concentrated distribution. For large \(d\), it is well approximated by a Gaussian with variance \(\|x\|^2/d\):</p>
 
   <div class="thm">
-    <span class="tlabel">Concentration on the sphere · asymptotic Gaussian + exact tail bound</span>
+    <span class="tlabel">Concentration on the sphere</span>
     \(\langle u, x \rangle \;\approx\; \mathcal{N}\!\left(0,\,\frac{\|x\|^2}{d}\right)\)
     <br><br>
     Standard spherical concentration gives a subgaussian tail of the form \(\;\mathbb{P}\!\left(\left|\langle u,x\rangle\right| > \varepsilon\right) \leq 2\exp\!\left(-c\,\frac{d\,\varepsilon^2}{\|x\|^2}\right)\) for an absolute constant \(c>0\).
   </div>
 
-  <p>The tail probability decays <em>exponentially</em> in \(d\). A deviation that is a 10% mistake in 10D is essentially impossible in 1000D — the probability falls by a factor of \(e^{99}\). This is not intuitive from everyday experience; it is purely a high-dimensional phenomenon.</p>
+  <p>The tail probability decays <em>exponentially</em> in \(d\). This is not intuitive from everyday experience: it is purely a high-dimensional phenomenon.</p>
 
   <div class="viz" id="v1">
     <div class="vtitle"><em>V1</em> How fast projections concentrate as dimension grows</div>
@@ -172,12 +259,12 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
       <label>Samples <span class="v" id="v1nv">2000</span><input type="range" id="v1n" min="200" max="5000" value="2000" step="200"></label>
     </div>
     <div id="v1svg"></div>
-    <p class="vcap">Distribution of \(\langle u, x\rangle\) for random unit \(u\). Orange dashed lines: theoretical \(\pm\sigma = \pm\|x\|/\sqrt{d}\). <strong>Drag d up — watch the distribution collapse inward.</strong> The concentration is already visible at d=64; by d=256 the spread is tiny.</p>
+    <p class="vcap">Distribution of projections for a random unit vector. Orange dashed lines mark the theoretical spread. <strong>Drag d up and watch the distribution collapse inward.</strong> The concentration is already visible at d=64; by d=256 the spread is tiny.</p>
   </div>
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    Concentration suggests that most rotated coordinates \((Rx)_i\) fall in a predictable \(O(\|x\|/\sqrt d)\) range. That makes a shared scalar grid plausible and reduces the need for per-coordinate metadata, though practical implementations still depend on how norms are handled and what clipping level is chosen.
+    <strong>Why this matters for quantisation:</strong> If every coordinate of \(Rx\) lives in a predictable band, we can design a single quantisation grid that works for all coordinates. No per-channel scale factors, no calibration pass. In LLaMA-2 70B with \(d{=}128\) heads, that is 128 scale factors we do not store per token.
   </div>
 </div>
 
@@ -189,18 +276,19 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    A key vector in an LLM might have most of its energy concentrated in just a few dimensions — like a microphone that mostly picks up bass and ignores treble. After a random rotation, that same information is spread much more evenly across coordinates. The coordinates are exchangeable, each has the same marginal law, and in high dimension they behave close to weakly dependent Gaussian samples. That is the regime where a single scalar quantiser becomes attractive.
+    Imagine a choir where one singer is far louder than the rest. If we record with one microphone per singer, we'd need a sensitive mic for the loud one and basic mics for everyone else. There would thus be different equipment for each channel. Now imagine mixing the audio so every speaker carries an equal blend of all voices. Suddenly one mic setting works for all of them. That's what a random rotation does to a vector: it spreads the energy evenly across coordinates, so a single quantisation grid fits every dimension.
   </div>
 
   <p>Each coordinate of \(Rx\) is a linear combination of all \(d\) original coordinates. By the Central Limit Theorem, sums of many weakly-correlated terms converge to Gaussian. More precisely, the normalised squared coordinates follow a Beta distribution that concentrates around equal energy per dimension:</p>
 
   <div class="thm">
-    <span class="tlabel">Distribution of rotated coordinates · exact marginal for squares, asymptotic Gaussian for coordinates</span>
+    <span class="tlabel">Distribution of rotated coordinates</span>
     \((Rx)_i \;\overset{d}{\approx}\; \mathcal{N}\!\left(0,\;\frac{\|x\|^2}{d}\right) \quad \text{for large } d\)
     <br><br>
-    Exact: \(\quad\frac{(Rx)_i^2}{\|x\|^2} \;\sim\; \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)\n    <br>Equivalent rescaling: \(\;\frac{d\,(Rx)_i^2}{\|x\|^2} \sim d\cdot \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
+    Exact: \(\quad\frac{(Rx)_i^2}{\|x\|^2} \;\sim\; \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
+    <br>Equivalent rescaling: \(\;\frac{d\,(Rx)_i^2}{\|x\|^2} \sim d\cdot \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
     <br><br>
-    and coordinates \((Rx)_i\) are approximately independent.
+    The coordinates \((Rx)_i\) are exchangeable and pairwise uncorrelated (\(\mathbb{E}[(Rx)_i(Rx)_j] = 0\) for \(i \neq j\)). Each coordinate is approximately Gaussian for large \(d\), and any fixed finite subset of coordinates becomes approximately independent. (They are not truly independent because the sphere constrains the sum of squares, but in high dimensions this coupling is negligible for quantisation purposes.)
   </div>
 
   <div class="viz" id="v2">
@@ -209,12 +297,12 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
       <label>Dimension d = <span class="v" id="v2dv">32</span><input type="range" id="v2d" min="8" max="512" value="32" step="8"></label>
     </div>
     <div id="v2svg"></div>
-    <p class="vcap">Left (pink): first coordinate of a spiky vector across 3000 draws — heavy-tailed, non-Gaussian. Right (green): same coordinate after random rotation. Green curve: fitted Gaussian. <strong>Increase d — the fit tightens towards the theoretical Gaussian.</strong></p>
+    <p class="vcap"><strong style="color:var(--pink)">Left (pink)</strong>: first coordinate of a spiky vector across 3000 draws, heavy tailed and not bell shaped. <strong style="color:var(--green)">Right (green)</strong>: same coordinate after random rotation. Green curve: fitted bell curve. <strong>Increase d and the fit tightens towards the theoretical Gaussian.</strong></p>
   </div>
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    Near-i.i.d. Gaussian coordinates → the same Lloyd-Max quantiser grid is near-optimal for every dimension independently. No per-block scale factors, no codebook to store. At \(d=4096\) (a typical head dimension), the approximation is extremely tight.
+    <strong>The quantisation payoff:</strong> Once every coordinate looks like the same bell curve, a single rounding grid works well for all of them. No codebook and no per block scale factors are needed. This is why Stage 1 can use simple rounding and still get close to the theoretical best.
   </div>
 </div>
 
@@ -226,35 +314,32 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    There is a hard speed limit on compression — like the speed of light for information. Shannon proved that for a Gaussian signal, the minimum possible error at \(R\) bits per sample is exactly \(\sigma^2 \cdot 2^{-2R}\) — no scheme, no matter how clever, can do better. A simple scalar quantiser applied to a Gaussian is near-optimal in the high-rate regime; the classical \(\pi e/6\) factor corresponds to about 1.53 dB excess distortion in that asymptotic setting. The rotation step is meant to make coordinate marginals substantially more Gaussian-like so this scalar quantisation picture becomes a better approximation. Without rotation, the same quantiser can be materially worse.
+    When we compress a song to MP3, we accept some loss in quality to save space. There is a theoretical limit to how good it can sound at a given file size, and no encoder can beat it. Shannon proved the same kind of limit exists for compressing numbers: at a given bit budget, there is a minimum error we are stuck with. Rounding each number to the nearest value on a fixed grid nearly hits that limit, but only if the numbers look like a bell curve. The rotation from section 02 is what makes them look that way.
   </div>
 
-  <p>Shannon's rate-distortion theorem gives the fundamental compression limit. For a Gaussian source with variance \(\sigma^2\), the minimum MSE achievable at \(R\) bits per sample is:</p>
+  <p>Every bit we spend per number buys us more accuracy. For Gaussian distributed data under squared error, Shannon's theorem tells us exactly how much: double the bits, quarter the error. No scheme can beat this floor for that setting.</p>
 
   <div class="thm">
-    <span class="tlabel">Shannon rate-distortion bound (Gaussian source) · exact source bound</span>
+    <span class="tlabel">Shannon's compression floor</span>
     \(D^*(R) = \sigma^2 \cdot 2^{-2R}\)
     <br><br>
-    A scalar (per-sample) Lloyd-Max quantiser on a Gaussian source achieves:
+    <strong>How close does simple rounding get?</strong><br>
     \(\;D_{\text{scalar}} \leq \dfrac{\pi e}{6} \cdot D^*(R) \approx D^*(R) + 1.53\;\text{dB}\)
     <br><br>
-    The \(\pi e/6\) gap is the classical high-rate scalar-quantisation constant for Gaussian-like sources; it should be read as an asymptotic benchmark rather than a finite-rate theorem for every setting.
+    Within a factor of ~1.5 dB of the theoretical best. This is a classical result for bell-curve-shaped data, and should be read as an asymptotic benchmark rather than an exact guarantee at every bit rate.
   </div>
 
-  <p>For a non-Gaussian source (spiky activation vectors), scalar quantisation can be far worse. The role of rotation is to move the coordinates toward the Gaussian regime where this constant-gap guarantee becomes a better approximation. That is a strong signal-level argument, though not by itself an end-to-end model-quality guarantee.</p>
+  <p>For data that is not bell-curve-shaped (like spiky activation vectors), simple rounding does much worse. The rotation from section 02 reshapes the data so this near-optimal guarantee kicks in.</p>
 
   <div class="viz" id="v3">
-    <div class="vtitle"><em>V3</em> Rate-distortion curves — Shannon bound vs quantiser performance</div>
-    <div class="controls">
-      <label>Source variance σ² = <span class="v" id="v3sv">1.0</span><input type="range" id="v3s" min="1" max="10" value="1" step="0.5"></label>
-    </div>
+    <div class="vtitle"><em>V3</em> How much error does each bit budget buy?</div>
     <div id="v3svg"></div>
-    <p class="vcap">Green: Gaussian rate-distortion curve \(D^*(R)=\sigma^2\cdot2^{-2R}\). Blue: scalar quantiser on a Gaussian-like source — the \(\pi e/6 \approx 1.53\,\text{dB}\) benchmark is the classical <em>high-rate</em> asymptotic gap. Pink: scalar quantiser on the original spiky distribution can be much worse, especially at low bit rates. The figure is illustrative, not a finite-rate guarantee.</p>
+    <p class="vcap"><strong style="color:var(--green)">Green</strong>: Shannon's floor, the best any scheme can do. <strong style="color:var(--blue)">Blue</strong>: simple rounding after rotation, close to optimal. <strong style="color:var(--pink)">Pink</strong>: simple rounding on the original spiky data, noticeably worse. The <strong style="color:var(--orange)">orange vertical</strong> marks one TurboQuant operating point (3.5 bits per dimension).</p>
   </div>
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    At 3.5 bits/dim, the scalar quantiser can operate near the Gaussian signal-level limit. That suggests little compression inefficiency remains at the coordinate level, even though downstream model accuracy still depends on how these errors propagate through attention.
+    <strong>The efficiency claim:</strong> At around 3 to 3.5 bits per dimension, TurboQuant's simple rounding scheme is close to Shannon's floor for Gaussian sources. For context, FP16 uses 16 bits per dimension. Most of the compression headroom has already been captured.
   </div>
 </div>
 
@@ -266,88 +351,76 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    You have a million points in a million-dimensional space. The Johnson–Lindenstrauss lemma says they can be mapped into a much lower-dimensional space while approximately preserving all pairwise distances, with high probability over a random projection. The key message is that the target dimension depends logarithmically on the number of points and does not scale directly with the ambient dimension; the exact dimension still depends strongly on the desired distortion and constants in the bound.
+    We can take a million points in an enormous space and project them down to a few hundred dimensions, and all the distances between them barely change. The number of dimensions we need depends only on how many points there are, not on how large the original space was. A random matrix does the job.
   </div>
 
   <div class="thm">
-    <span class="tlabel">Johnson-Lindenstrauss lemma · high-probability embedding guarantee</span>
+    <span class="tlabel">Johnson-Lindenstrauss lemma</span>
     For any \(n\) points in \(\mathbb{R}^d\) and \(\varepsilon \in (0,1)\), there exists a linear map \(f: \mathbb{R}^d \to \mathbb{R}^k\) with \(k = O\!\left(\frac{\log n}{\varepsilon^2}\right)\) such that for all pairs \(i,j\):
     \[(1-\varepsilon)\|x_i - x_j\|^2 \;\leq\; \|f(x_i)-f(x_j)\|^2 \;\leq\; (1+\varepsilon)\|x_i-x_j\|^2\]
     And a random Gaussian matrix \(J\) with entries \(\sim\mathcal{N}(0,1/k)\) is such a map with high probability. Note: \(d\) does not appear in the bound on \(k\).
   </div>
 
-  <p>One clean proof route combines three ingredients: norm concentration for one vector, a reduction from pairwise distances to norm preservation, and a union bound over all pairs. The demos below emphasise those ingredients, while Point 1 is best viewed as geometric intuition rather than a complete proof on its own.</p>
-
   <!-- POINT 1 -->
   <div class="point" id="jl-p1">
-    <div class="point-header">Point 1 — High dimensions are mostly "equator" → why a random projection works at all</div>
-    <p>Pick two random unit vectors in \(\mathbb{R}^d\). Their dot product is \(\langle u, v \rangle = \cos\theta\). In 2D, \(\theta\) is uniformly random — you'd expect angles ranging from 0° to 180°. In high dimensions, almost all random unit vectors are nearly orthogonal to each other: \(\theta \approx 90°\). The surface area of the sphere concentrates near the equatorial hyperplane relative to any fixed direction.</p>
-    <p>This near-orthogonality is why you can draw Gaussian matrix entries without careful design — random directions don't "pile up" on each other, so a random projection sees the data evenly from many independent directions.</p>
-    <div class="point-answers">→ Answers: why does a random projection work at all?</div>
+    <div class="point-header">Point 1: High dimensions are mostly "equator"</div>
+    <p>Pick two random arrows in a high dimensional space. In 2D, the angle between them could be anything. In high dimensions, it is almost always close to 90°. This is why random projections work: the projection directions do not pile up, so the projection sees the data evenly.</p>
   </div>
 
   <div class="viz" id="vj1">
-    <div class="vtitle"><em>JL-A</em> Angle between random unit vectors — converges to 90° in high dimensions</div>
+    <div class="vtitle"><em>JL-A</em> Angles between random vectors converge to 90° in high dimensions</div>
     <div class="controls">
       <label>Dimension d = <span class="v" id="vj1dv">8</span><input type="range" id="vj1d" min="2" max="512" value="8" step="2"></label>
       <label>Pairs <span class="v" id="vj1nv">2000</span><input type="range" id="vj1n" min="200" max="5000" value="2000" step="200"></label>
     </div>
     <div id="vj1svg"></div>
-    <p class="vcap">Histogram of angles (in degrees) between random pairs of unit vectors in \(\mathbb{R}^d\). <strong>Drag d up — the distribution collapses tightly onto 90°.</strong> In 2D it's uniform; by d=100 nearly every pair is almost orthogonal.</p>
+    <p class="vcap">Histogram of angles between random pairs of arrows. <strong>Drag d up and watch the distribution collapse onto 90°.</strong> In 2D the angle could be anything; by d=100 nearly every pair is almost perpendicular.</p>
   </div>
 
   <!-- POINT 2 -->
   <div class="point" id="jl-p2">
-    <div class="point-header">Point 2 — Projection length concentrates → the (1±ε) accuracy guarantee</div>
-    <p>Project a vector onto \(k\) independent random Gaussian directions and compute the average squared projection. This is like asking \(k\) independent surveyors to estimate the same length — the average concentrates around the truth as \(k\) grows. Formally, \(\|Jx\|^2\) is a scaled chi-squared random variable with \(k\) degrees of freedom, and its relative deviation falls within \(\pm\varepsilon\) of \(\|x\|^2\) with probability at least:</p>
+    <div class="point-header">Point 2: More projections, better accuracy</div>
+    <p>Like asking \(k\) independent surveyors to estimate the same distance: with few the estimate is noisy, with many it locks in. The failure probability drops exponentially:</p>
     \[\mathbb{P}\!\left(\left|\|Jx\|^2 - \|x\|^2\right| > \varepsilon\|x\|^2\right) \;\leq\; 2\exp\!\left(-\frac{k\varepsilon^2}{4}\right)\]
-    <p>This is the core inequality of the proof — the actual distance-preservation guarantee for a single pair.</p>
-    <div class="point-answers">→ Answers: how accurate is the projection for one pair?</div>
   </div>
 
   <div class="viz" id="vj2">
-    <div class="vtitle"><em>JL-B</em> Distribution of projected distance ratio ‖Jx−Jy‖²/‖x−y‖² for one pair</div>
+    <div class="vtitle"><em>JL-B</em> How close is the projected distance to the true distance? (one pair)</div>
     <div class="controls">
       <label>Projection dim k = <span class="v" id="vj2kv">16</span><input type="range" id="vj2k" min="4" max="256" value="16" step="4"></label>
       <label>ε bound <span class="v" id="vj2ev">0.3</span><input type="range" id="vj2e" min="0.05" max="0.9" value="0.3" step="0.05"></label>
     </div>
     <div id="vj2svg"></div>
-    <p class="vcap">Each sample: one random projection matrix \(J\). X-axis: ratio of projected to true squared distance (should be 1.0 if perfect). Orange lines: \(1\pm\varepsilon\) bounds. <strong>Increase k — the distribution collapses around 1.</strong> The fraction outside the bounds matches the theoretical bound.</p>
+    <p class="vcap">Each sample is one random projection. The x axis shows the ratio of projected distance to true distance (1.0 means perfect). Orange lines mark the accuracy bounds. <strong>Increase k and watch the distribution collapse around 1.</strong> More projection dimensions means tighter estimates.</p>
   </div>
 
   <!-- POINT 3 -->
   <div class="point" id="jl-p3">
-    <div class="point-header">Point 3 — Union bound over n² pairs → the k = O(log n / ε²) dimension count</div>
-    <p>For \(n\) points there are \(\binom{n}{2} \approx n^2/2\) pairs. We need <em>every</em> pair to stay within \((1\pm\varepsilon)\). From Point 2, each pair fails with probability \(\leq 2e^{-k\varepsilon^2/4}\). By the union bound, the probability that <em>any</em> pair fails is at most:</p>
-    \[\frac{n^2}{2} \cdot 2e^{-k\varepsilon^2/4} = n^2 \cdot e^{-k\varepsilon^2/4}\]
-    <p>Set this \(\leq \delta\) (say \(\delta = 0.01\)) and solve for \(k\):</p>
-    \[k \;\geq\; \frac{4}{\varepsilon^2}\ln\!\frac{n^2}{\delta} = \frac{8\log n}{\varepsilon^2} + \frac{4\log(1/\delta)}{\varepsilon^2} = O\!\left(\frac{\log n}{\varepsilon^2}\right)\]
-    <p>The \(\log n\) comes from surviving \(n^2\) pairs. The \(1/\varepsilon^2\) comes from Point 2's concentration rate. <strong>The original dimension \(d\) never appears</strong> — it is absorbed by the normalisation of \(J\)'s entries.</p>
-    <div class="point-answers">→ Answers: how many projection dimensions k do you need?</div>
+    <div class="point-header">Point 3: Guaranteeing all pairs at once</div>
+    <p>For \(n\) points there are \(\sim n^2/2\) pairs. Sum the failure chances from Point 2 over all pairs:</p>
+    \[n^2 \cdot e^{-k\varepsilon^2/4} \;\leq\; \delta \quad\Longrightarrow\quad k \;\geq\; \frac{8\log n + 4\log(1/\delta)}{\varepsilon^2} = O\!\left(\frac{\log n}{\varepsilon^2}\right)\]
+    <p><strong>The original dimension \(d\) never appears.</strong> The \(\log n\) pays for protecting all pairs; the \(1/\varepsilon^2\) pays for tightness.</p>
   </div>
 
   <div class="viz" id="vj3">
-    <div class="vtitle"><em>JL-C</em> Union bound calculator — required k for n points at accuracy ε</div>
+    <div class="vtitle"><em>JL-C</em> How many projection dimensions do we need?</div>
     <div class="controls">
       <label>Points n = <span class="v" id="vj3nv">1000</span><input type="range" id="vj3n" min="10" max="100000" value="1000" step="100"></label>
       <label>Accuracy ε = <span class="v" id="vj3ev">0.10</span><input type="range" id="vj3e" min="0.05" max="0.5" value="0.10" step="0.01"></label>
     </div>
     <div id="vj3svg"></div>
     <div class="stat-row" id="vj3stats"></div>
-    <p class="vcap">X-axis: projection dimension k. Green curve: total failure probability = n²·e^(−kε²/4). Orange line: 1% threshold. <strong>The required \(k\) grows as \(\log(n)/\varepsilon^2\). For \(n=1,000,000\) and \(\varepsilon=0.1\), the simple union-bound estimate shown here lands in the tens of thousands of dimensions rather than a few hundred; sharper constants can improve this, but not to \(\sim 400\) under the displayed bound.</strong></p>
+    <p class="vcap"><strong style="color:var(--green)">Green</strong>: chance that any pair fails. <strong style="color:var(--orange)">Orange</strong>: 1% safety threshold. <strong>Try adding more points or tightening the accuracy</strong> to see how the required number of projection dimensions changes. The required dimensions grow with the logarithm of the number of points, not proportionally.</p>
   </div>
 
-  <h3>The three facts compose into the lemma</h3>
-  <p>The lemma is exactly these three statements in sequence:</p>
-  <ul>
-    <li><strong>[Point 1]</strong> A random Gaussian matrix is a valid candidate — random directions are nearly orthogonal, so the map doesn't wildly distort the data.</li>
-    <li><strong>[Point 2]</strong> For any single pair, the projection preserves their distance within \((1\pm\varepsilon)\) with probability \(\geq 1 - 2e^{-k\varepsilon^2/4}\).</li>
-    <li><strong>[Point 3]</strong> Choosing \(k = O(\log n / \varepsilon^2)\) makes the failure probability summed over all \(n^2\) pairs go below any fixed \(\delta\).</li>
-  </ul>
+  <div class="plain" style="border-left-color:var(--green)">
+    <span class="plabel" style="color:var(--green)">The punchline</span>
+    The required projection dimension grows only logarithmically in the number of points, regardless of the original dimension. A million point cloud could live in ten dimensions or ten million; the projection size barely changes. Only the <em>number of points</em> and the desired accuracy matter.
+  </div>
 
   <div class="conn">
-    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    JL explains why a shared random projection can preserve enough geometry for downstream estimation. It does not by itself prove that one sign bit per row is sufficient, and it should not be used as the main justification for the one-bit residual estimator. Its role here is motivational: random projections can preserve geometry surprisingly well, while the actual one-bit correction argument comes from the arc-cosine identity and the estimator analysis below.
+    <span class="clabel">Connection to TurboQuant</span>
+    JL is the "random projections are trustworthy" guarantee. It tells us geometry survives the projection; the arc-cosine identity in section 05 explains why one bit per dimension is enough.
   </div>
 </div>
 
@@ -359,40 +432,33 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    Flip a coin whose bias is determined by the angle between two vectors. The probability the coin comes up heads equals \(1 - \theta/\pi\), where \(\theta\) is the angle between the vectors. That identity is exact for Gaussian hyperplanes. A single random bit therefore carries angular information, and many such bits can be aggregated into a calibrated similarity estimate.
+    Draw a random line through the origin. Two vectors either land on the same side or opposite sides. The chance they agree depends only on the angle between them. Similar vectors almost always agree; perpendicular ones agree half the time. A single yes/no bit carries real angular information.
   </div>
-
-  <p>This is the sharpest result in the pipeline: an exact identity, valid for any dimension \(d\) and any nonzero vectors \(r,q\). For a random Gaussian vector \(j \sim \mathcal{N}(0,I_d)\):</p>
 
   <div class="thm">
     <span class="tlabel">Arc-cosine identity (exact, any d)</span>
     \(\mathbb{P}\!\left(\mathrm{sign}(j^\top r) = \mathrm{sign}(j^\top q)\right) = 1 - \frac{\theta(r,q)}{\pi}\)
     <br><br>
-    where \(\theta(r,q) = \arccos\!\left(\frac{\langle r,q\rangle}{\|r\|\|q\|}\right)\). And the key mixed expectation:
+    where \(\theta(r,q) = \arccos\!\left(\frac{\langle r,q\rangle}{\|r\|\|q\|}\right)\). The key mixed expectation:
     <br><br>
     \(\mathbb{E}\!\left[\mathrm{sign}(j^\top r)\cdot(j^\top q)\right] = \sqrt{\dfrac{2}{\pi}}\,\dfrac{\langle r,\,q\rangle}{\|r\|}\)
   </div>
 
-  <p>The second identity makes Stage 2 work. Store \(\mathrm{sign}(Jr)\) (one bit per row of \(J\)). At query time, compute \(J_i^\top q\) from the same shared seed, multiply, and average. The result is proportional to \(\langle r, q\rangle\), with a known calibration factor and finite-sample variance.</p>
-  <p><em>Proof sketch:</em> Let \(a = j^\top r/\|r\|\) and write \(j^\top q = \rho\|q\| a + \epsilon\) where \(\rho=\cos\theta\) and \(\epsilon\perp a\). Then \(\mathbb{E}[\mathrm{sign}(a)\cdot j^\top q] = \rho\|q\|\mathbb{E}[|a|] = \rho\|q\|\sqrt{2/\pi}\).</p>
-
-  <div class="note">
-    <span class="nlabel">Calibration note</span>
-    The mixed expectation is proportional to \(\langle r,q\rangle\), not equal to it directly. Multiplying the sample average by \(\sqrt{\pi/2}\,\|r\|\) removes the known factor. That distinction matters when calling the estimator “unbiased.”
-  </div>
+  <p><strong>Encoding:</strong> project the leftover error from Stage 1 onto many random directions and store just the sign (+1 or -1) of each. That is all we keep.</p>
+  <p><strong>Decoding (query time):</strong> recreate the same directions from the shared seed and project the query onto each one. Multiply each stored sign by the query's projection in that direction, then average all the products. That average estimates similarity, off by a known scaling factor that we simply multiply away.</p>
 
   <div class="viz" id="v5">
-    <div class="vtitle"><em>V5</em> Arc-cosine identity — theoretical curve vs empirical sign-agreement rate</div>
+    <div class="vtitle"><em>V5</em> How often do two vectors land on the same side of a random line?</div>
     <div class="controls">
       <label>Samples per angle <span class="v" id="v5sv">1000</span><input type="range" id="v5s" min="200" max="4000" value="1000" step="200"></label>
     </div>
     <div id="v5svg"></div>
-    <p class="vcap">Green curve: exact formula \(p(\theta)=1-\theta/\pi\). Blue dots: empirical sign-agreement frequency at 20 equally-spaced angles using random Gaussian projections. <strong>The agreement is exact in expectation</strong> — more samples = dots collapse onto the curve.</p>
+    <p class="vcap"><strong style="color:var(--green)">Green curve</strong>: exact formula. <strong style="color:var(--blue)">Blue dots</strong>: measured from random projections. <strong>The match is exact in expectation.</strong> Increase samples and the dots collapse onto the curve.</p>
   </div>
 
   <div class="conn">
-    <span class="clabel">What this buys you in Stage 2</span>
-    After rescaling by the known factor \(\sqrt{\pi/2}\,\|r\|\), this gives an unbiased estimator of \(\langle r, q\rangle\). In practice, Stage 2 is best understood as a calibrated correction term: the rescaled estimator has the correct mean, and its accuracy improves with the number of projection rows.
+    <span class="clabel">Connection to TurboQuant</span>
+    Suppose the true similarity between a residual and a query is 0.7. A single sign bit just says +1 or -1, which is crude. But TurboQuant stores one bit per dimension, so for a 128 dimensional vector that is 128 sign bits. We multiply each stored sign by the query's projection in that direction, then average all 128 products. After correcting for the known scaling factor, we might get 0.69. That is Stage 2: a cheap correction built from signs that closes the gap left by Stage 1's rounding.
   </div>
 </div>
 
@@ -400,34 +466,34 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
      06. LAW OF LARGE NUMBERS
 ═══════════════════════════════════════════ -->
 <div class="pillar" id="p6">
-  <div class="pillar-header"><span class="pillar-num">06</span><h2>Law of Large Numbers — Variance Decay</h2></div>
+  <div class="pillar-header"><span class="pillar-num">06</span><h2>Law of Large Numbers</h2></div>
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    You are trying to estimate a building's height. One estimate from a passerby: noisy. Ten estimates averaged: better. A hundred: accurate. Each projection row in Stage 2 is one noisy but calibrated measurement of the residual inner product. Average enough of them and the estimator concentrates around its expectation. The law of large numbers matters twice here: high dimension stabilises rotated coordinates, and larger sketch size stabilises the residual correction.
+    Ask one person to guess the height of a building and the answer could be way off. Ask ten and average their guesses, and we get closer. Ask a hundred and the average is remarkably accurate. Each random direction works the same way: one direction gives a noisy reading, but averaging many locks the estimate in near the truth.
   </div>
 
   <div class="thm">
-    <span class="tlabel">QJL estimator — exact mean, variance decays as 1/m</span>
+    <span class="tlabel">Estimator accuracy: more bits, less noise</span>
     \(\hat{\ell}_m = \frac{1}{m}\sum_{i=1}^m \mathrm{sign}(j_i^\top r)\cdot(j_i^\top q)\)
     <br><br>
     \(\mathbb{E}[\hat{\ell}_m] = \sqrt{\tfrac{2}{\pi}}\,\dfrac{\langle r,q\rangle}{\|r\|} \qquad\text{(unbiased up to known constant)}\)
     <br><br>
-    \(\mathrm{Var}[\hat{\ell}_m] = \dfrac{C}{m} \qquad\text{(shrinks as }1/m\text{, by LLN)}\)
+    \(\mathrm{Var}[\hat{\ell}_m] \;\propto\; \dfrac{1}{m}\)
   </div>
 
   <div class="viz" id="v6">
-    <div class="vtitle"><em>V6</em> QJL estimator variance decays as 1/m (log-log scale)</div>
+    <div class="vtitle"><em>V6</em> How fast does noise shrink as we add more bits?</div>
     <div class="controls">
       <label>Trials per point <span class="v" id="v6tv">500</span><input type="range" id="v6t" min="100" max="2000" value="500" step="100"></label>
     </div>
     <div id="v6svg"></div>
-    <p class="vcap">Blue: empirical variance of \(\hat\ell_m\) vs number of sign bits \(m\). Orange: \(1/m\) reference line. Log-log scale so slope = −1 if variance ∝ 1/m. <strong>The slope matches theory.</strong> This tells you exactly how many sign bits you need for a given accuracy target.</p>
+    <p class="vcap"><strong style="color:var(--blue)">Blue</strong>: measured noise. <strong style="color:var(--orange)">Orange</strong>: theory (double the bits, halve the noise). <strong>The slopes match.</strong></p>
   </div>
 
   <div class="conn">
-    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    TurboQuant can devote a small auxiliary sketch to the residual because Stage 1 has already removed most of the signal energy. The required number of sign rows is therefore a variance-budget question: more rows reduce noise like \(1/m\), but the right operating point is ultimately empirical.
+    <span class="clabel">Connection to TurboQuant</span>
+    Stage 1 captures most of the signal but leaves a small residual. Stage 2 stores one sign bit per dimension to compress that residual. Each bit is an independent noisy estimate of the same similarity. By the law of large numbers, averaging all d of them shrinks the variance by a factor of d (so the standard deviation shrinks by a factor of √d). This is why even one bit per dimension is enough to make Stage 2 error much smaller than Stage 1 rounding error.
   </div>
 </div>
 
@@ -435,31 +501,29 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
      07. DATA-OBLIVIOUSNESS
 ═══════════════════════════════════════════ -->
 <div class="pillar" id="p7">
-  <div class="pillar-header"><span class="pillar-num">07</span><h2>Data-Obliviousness &amp; Shared Randomness</h2></div>
+  <div class="pillar-header"><span class="pillar-num">07</span><h2>Shared Randomness</h2></div>
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    Two people can agree in advance on a shared recipe — say, a random seed — and later use it independently without further communication. TurboQuant uses this idea: \(R\) and \(J\) are regenerated from shared randomness rather than stored per vector. That does not make them literally free in every systems sense, but it does mean their description cost can be amortised across many vectors instead of paid repeatedly.
+    Agree on a recipe (a random seed) in advance. Both sides regenerate the same rotation and projection from it. The seed is a small fixed size (a typical implementation uses 32 bytes); everything else is reconstructed on the fly.
   </div>
-
-  <p>Because \(R\) and \(J\) are drawn independently of any single input \(x\), the same transforms can be reused across vectors. The sign sketch has a fixed alphabet \(\{-1,+1\}^m\), while the quantised rotated coordinates can often be described with shared grid parameters plus a small amount of norm information.</p>
 
   <div class="thm">
     <span class="tlabel">What must be stored per KV vector</span>
     \(\underbrace{\mathrm{quant}(Rx)}_{b\;\text{bits/dim}} \;\|\; \underbrace{\mathrm{sign}(Jr)}_{1\;\text{bit/dim}} \;\|\; \underbrace{\|x\|}_{\text{1 scalar}}\)
     <br><br>
-    \(R,\, J\): stored once as a random seed — \(O(1)\) bytes total regardless of model size or context length.
+    \(R,\, J\): stored once as a random seed (small, fixed size).
   </div>
 
   <div class="viz" id="v7">
-    <div class="vtitle"><em>V7</em> Storage breakdown — TurboQuant vs data-dependent schemes</div>
+    <div class="vtitle"><em>V7</em> What gets stored per vector?</div>
     <div id="v7svg"></div>
-    <p class="vcap"><span style="color:var(--green)">■</span> Stored per KV vector (pure signal). <span style="color:var(--blue)">■</span> Regenerated from shared seed (zero cost per vector). <span style="color:var(--orange)">■</span> Per-vector overhead in data-dependent schemes. TurboQuant eliminates orange entirely.</p>
+    <p class="vcap"><span style="color:var(--green)">■</span> Stored per vector. <span style="color:var(--blue)">■</span> Regenerated from seed (free). <span style="color:var(--orange)">■</span> Extra metadata competitors need. TurboQuant eliminates the orange column.</p>
   </div>
 
   <div class="conn">
-    <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    The systems appeal is that shared randomness reduces per-vector metadata. At aggressive bitrates, saving even a fraction of a bit per dimension matters. The exact memory win versus alternative schemes depends on implementation details, but the direction of the advantage is clear: fewer per-vector side parameters means a larger share of memory goes to signal itself.
+    <span class="clabel">Connection to TurboQuant</span>
+    Traditional methods typically need 1 to 2 extra bits per dimension for per vector metadata (scale factors, codebook indices). TurboQuant replaces all of that with a single shared seed. For a 128K token context, that difference adds up to megabytes of overhead eliminated.
   </div>
 </div>
 
@@ -475,23 +539,35 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
   </div>
 </div>
 
+<div class="chain-section" id="algorithm" style="padding-top:2rem">
+  <h2 style="font-family:var(--serif);font-size:1.9rem;color:var(--head);margin-bottom:.5rem">Putting It All Together</h2>
+  <p style="color:var(--dim);margin-bottom:1.2rem">Now that we have seen the seven ingredients, here is the full recipe.</p>
+  <div class="algobox">
+    <span class="alabel">TurboQuant in five steps</span>
+    <ol>
+      <li>Generate shared random operators \(R\) and \(J\) from a seed.</li>
+      <li>Rotate the KV vector: \(y = Rx\).</li>
+      <li>Quantise \(y\) coordinatewise with a fixed scalar grid to obtain Stage 1.</li>
+      <li>Form the residual \(r = x - R^\top \tilde y\), then store \(\mathrm{sign}(Jr)\) as Stage 2.</li>
+      <li>At query time, combine the Stage 1 reconstruction with a calibrated estimator from \(\mathrm{sign}(Jr)\) and \(Jq\) to approximate \(\langle x,q\rangle\).</li>
+    </ol>
+  </div>
+</div>
+
 <div class="chain-section refs" id="refs">
-  <h2 style="font-family:var(--serif);font-size:1.9rem;color:var(--head);margin-bottom:.5rem">References &amp; provenance</h2>
-  <p style="color:var(--dim);margin-bottom:1rem">These are the classical results the explainer leans on. Listing them explicitly makes it easier to distinguish established theorems from TurboQuant-specific interpretation.</p>
+  <h2 style="font-family:var(--serif);font-size:1.9rem;color:var(--head);margin-bottom:.5rem">References &amp; further reading</h2>
   <ul>
-    <li><strong>Spherical concentration / Lévy-type phenomena.</strong> Standard high-dimensional probability results for random points on the sphere and Lipschitz observables.</li>
-    <li><strong>Coordinate laws on the sphere.</strong> For \(u\sim\mathrm{Unif}(\mathbb S^{d-1})\), the squared coordinate \(u_i^2\) has a Beta distribution; Gaussian approximations emerge as \(d\to\infty\).</li>
-    <li><strong>Shannon rate-distortion theory.</strong> For a Gaussian source, \(D^*(R)=\sigma^2 2^{-2R}\) is exact.</li>
-    <li><strong>High-rate scalar quantisation.</strong> The \(\pi e/6\) constant is the classical asymptotic gap between optimal scalar quantisation and the Gaussian rate-distortion limit.</li>
-    <li><strong>Johnson–Lindenstrauss embeddings.</strong> Random projections preserve pairwise geometry with target dimension \(O(\log n/\varepsilon^2)\).</li>
-    <li><strong>Random hyperplane / arc-cosine identity.</strong> Gaussian sign projections recover angular similarity exactly in expectation.</li>
-    <li><strong>Monte Carlo variance scaling.</strong> Averaging independent rows drives estimator variance down like \(1/m\).</li>
+    <li><strong>Spherical concentration.</strong> Vershynin, <a href="https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html" style="color:var(--green)"><em>High-Dimensional Probability</em></a></li>
+    <li><strong>Coordinate laws on the sphere.</strong> Diaconis &amp; Freedman, <a href="https://doi.org/10.1214/aos/1176346703" style="color:var(--green)">"Asymptotics of graphical projection pursuit"</a> (1984).</li>
+    <li><strong>Gaussian rate-distortion.</strong> Shannon, "Coding theorems for a discrete source with a fidelity criterion," <em>IRE National Convention Record</em> (1959). High-rate gap: Gersho, <a href="https://doi.org/10.1109/TIT.1979.1056067" style="color:var(--green)">"Asymptotically optimal block quantization"</a> (1979).</li>
+    <li><strong>Johnson-Lindenstrauss embeddings.</strong> Johnson &amp; Lindenstrauss (1984). Dasgupta &amp; Gupta, <a href="https://doi.org/10.1002/rsa.10073" style="color:var(--green)">"An elementary proof of a theorem of Johnson and Lindenstrauss"</a> (2003).</li>
+    <li><strong>Arc-cosine / random hyperplane identity.</strong> Goemans &amp; Williamson, <a href="https://doi.org/10.1145/227683.227684" style="color:var(--green)">"Improved approximation algorithms for maximum cut"</a> (1995).</li>
+    <li><strong>QJL estimator.</strong> Zandieh, Daliri, Hadian &amp; Mirrokni, "TurboQuant" (ICLR 2026), <a href="https://arxiv.org/abs/2504.19874" style="color:var(--green)">arXiv:2504.19874</a>.</li>
   </ul>
 </div>
 
 </main>
 
-<footer><div class="wrap"><p>TurboQuant — mathematical foundations explainer · visualisations use simulated data · wording distinguishes exact identities from high-dimensional approximations.</p></div></footer>
 
 <script>
 // ── utils ────────────────────────────────────────────────
@@ -570,34 +646,48 @@ function drawHist(g,data,w,h,col,opts={}){
 // ── V3 Rate-distortion ──────────────────────────────────
 (function(){
   const id='v3svg';const cont=document.getElementById(id);const w=cw(id);
-  const H=240,M={t:20,r:130,b:40,l:55};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
+  const H=270,M={t:20,r:20,b:40,l:55};const iW=w-M.l-M.r;const iH=H-M.t-M.b;
   const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
   const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
-  function render(){
-    g.selectAll('*').remove();
-    const s2=+document.getElementById('v3s').value;document.getElementById('v3sv').textContent=s2.toFixed(1);
-    const Rs=d3.range(0.25,5,.04);
-    const Dopt=Rs.map(R=>s2*Math.pow(2,-2*R));
-    const Dscal=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6);
-    const Dspik=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6*(1+2.8*Math.exp(-R*.8)));
-    const allD=[...Dopt,...Dscal,...Dspik];
-    const x=d3.scaleLinear().domain([0.25,5]).range([0,iW]);
-    const y=d3.scaleLog().domain([d3.min(allD)*.7,d3.max(allD)*1.3]).range([iH,0]);
-    g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(x).ticks(6).tickSize(3)).call(axs);
-    g.append('g').call(d3.axisLeft(y).ticks(5,'~e').tickSize(3)).call(axs);
-    g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('bits per dimension (R)');
-    function line(pts,col,label,dash){
-      g.append('path').datum(pts).attr('d',d3.line().x(d=>x(d[0])).y(d=>y(d[1])).curve(d3.curveCatmullRom)).attr('fill','none').attr('stroke',col).attr('stroke-width',1.8).attr('stroke-dasharray',dash||'none');
-      const last=pts[pts.length-1];
-      g.append('text').attr('x',x(last[0])+6).attr('y',y(last[1])+4).attr('fill',col).attr('font-size',9.5).attr('font-family',MO).text(label);}
-    line(Rs.map((R,i)=>[R,Dopt[i]]),C.green,'Shannon bound');
-    line(Rs.map((R,i)=>[R,Dscal[i]]),C.blue,'Scalar (post-rotation)','5,3');
-    line(Rs.map((R,i)=>[R,Dspik[i]]),C.pink,'Scalar (spiky, no rotation)','3,2');
-    const mr=2.2,y1=s2*Math.pow(2,-2*mr),y2=y1*Math.PI*Math.E/6;
-    g.append('line').attr('x1',x(mr)).attr('x2',x(mr)).attr('y1',y(y1)).attr('y2',y(y2)).attr('stroke',C.orange).attr('stroke-width',1).attr('stroke-dasharray','2,2');
-    g.append('text').attr('x',x(mr)+4).attr('y',(y(y1)+y(y2))/2+4).attr('fill',C.orange).attr('font-size',9).attr('font-family',MO).text('πe/6≈1.53dB');
+  const s2=1;
+  const Rs=d3.range(0.5,6,.04);
+  const Dopt=Rs.map(R=>s2*Math.pow(2,-2*R));
+  const Dscal=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6);
+  const Dspik=Rs.map(R=>s2*Math.pow(2,-2*R)*Math.PI*Math.E/6*(1+2.8*Math.exp(-R*.8)));
+  const allD=[...Dopt,...Dscal,...Dspik];
+  const x=d3.scaleLinear().domain([0.5,6]).range([0,iW]);
+  const y=d3.scaleLog().domain([d3.min(allD)*.7,d3.max(allD)*1.3]).range([iH,0]);
+  g.append('g').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(x).ticks(6).tickSize(3)).call(axs);
+  g.append('g').call(d3.axisLeft(y).ticks(5,'~e').tickSize(3)).call(axs);
+  g.append('text').attr('x',iW/2).attr('y',iH+32).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).text('bits per dimension');
+  g.append('text').attr('x',-iH/2).attr('y',-40).attr('text-anchor','middle').attr('fill',C.dim).attr('font-size',10).attr('font-family',MO).attr('transform','rotate(-90)').text('error (MSE)');
+  // lines (no end labels)
+  function line(pts,col,dash){
+    g.append('path').datum(pts).attr('d',d3.line().x(d=>x(d[0])).y(d=>y(d[1])).curve(d3.curveCatmullRom)).attr('fill','none').attr('stroke',col).attr('stroke-width',1.8).attr('stroke-dasharray',dash||'none');
   }
-  document.getElementById('v3s').addEventListener('input',render);render();
+  line(Rs.map((R,i)=>[R,Dopt[i]]),C.green);
+  line(Rs.map((R,i)=>[R,Dscal[i]]),C.blue,'5,3');
+  line(Rs.map((R,i)=>[R,Dspik[i]]),C.pink,'3,2');
+  // TurboQuant marker at 3.5 bits
+  const tqR=3.5;
+  g.append('line').attr('x1',x(tqR)).attr('x2',x(tqR)).attr('y1',0).attr('y2',iH).attr('stroke',C.orange).attr('stroke-width',1.5).attr('stroke-dasharray','4,3').attr('opacity',.8);
+  g.append('text').attr('x',x(tqR)+6).attr('y',14).attr('fill',C.orange).attr('font-size',9.5).attr('font-family',MO).text('TurboQuant 3.5 bits');
+  // dots at intersection
+  const tqOpt=s2*Math.pow(2,-2*tqR);
+  const tqScal=tqOpt*Math.PI*Math.E/6;
+  const tqSpik=tqScal*(1+2.8*Math.exp(-tqR*.8));
+  [tqOpt,tqScal,tqSpik].forEach((dy,i)=>{
+    const col=[C.green,C.blue,C.pink][i];
+    g.append('circle').attr('cx',x(tqR)).attr('cy',y(dy)).attr('r',4).attr('fill',col).attr('stroke',C.bg).attr('stroke-width',1.5);
+  });
+  // legend (top-right, stacked vertically)
+  const legend=[['Shannon floor (best possible)',C.green,'none'],['After rotation',C.blue,'5,3'],['Spiky, no rotation',C.pink,'3,2']];
+  const lg=g.append('g').attr('transform',`translate(${iW-170},${8})`);
+  legend.forEach(([label,col,dash],i)=>{
+    const row=lg.append('g').attr('transform',`translate(0,${i*18})`);
+    row.append('line').attr('x1',0).attr('x2',20).attr('y1',0).attr('y2',0).attr('stroke',col).attr('stroke-width',2).attr('stroke-dasharray',dash==='none'?null:dash);
+    row.append('text').attr('x',26).attr('y',4).attr('fill',col).attr('font-size',9).attr('font-family',MO).text(label);
+  });
 })();
 
 // ── JL-A Equator (angle distribution) ──────────────────
@@ -741,9 +831,9 @@ function drawHist(g,data,w,h,col,opts={}){
   const svg=d3.select(cont).append('svg').attr('width','100%').attr('viewBox',`0 0 ${w} ${H}`);
   const cW=w/3;
   const cols=[
-    {lbl:['TurboQuant','stored per vector'],col:C.green,items:['quant(Rx) → b bits/dim','sign(Jr)  → 1 bit/dim','‖x‖       → 1 scalar']},
-    {lbl:['Shared seed','(zero cost/vector)'],col:C.blue, items:['R  — rotation matrix','J  — Gaussian matrix','Quantiser grid']},
-    {lbl:['Competitors','per-vector overhead'],col:C.orange,items:['per-group scale factors','codebook entries (PQ)','calibration stats']},
+    {lbl:['TurboQuant','stored per vector'],col:C.green,items:['quantised values (b bits/dim)','sign bits (1 bit/dim)','vector length (1 scalar)']},
+    {lbl:['Shared seed','(zero cost per vector)'],col:C.blue, items:['rotation matrix','projection matrix','rounding grid']},
+    {lbl:['Competitors','extra cost per vector'],col:C.orange,items:['per-group scale factors','codebook entries','calibration stats']},
   ];
   cols.forEach((c,ci)=>{
     const cx=cW*ci+cW/2;
@@ -765,12 +855,12 @@ function drawHist(g,data,w,h,col,opts={}){
   const bW=150,bH=44;
   const nodes=[
     {id:'com',lbl:['Concentration','of Measure'],     x:.5, y:.04,col:C.purple},
-    {id:'clt',lbl:['CLT / Beta','Distribution'],      x:.28,y:.18,col:C.blue},
-    {id:'rd', lbl:['Rate-Distortion','Theory'],        x:.72,y:.18,col:C.blue},
-    {id:'jl', lbl:['Johnson-Lindenstrauss','Lemma'],   x:.5, y:.38,col:C.blue},
-    {id:'arc',lbl:['Arc-Cosine','Identity'],           x:.5, y:.54,col:C.green},
-    {id:'lln',lbl:['Law of Large','Numbers'],          x:.5, y:.70,col:C.green},
-    {id:'do', lbl:['Data-Obliviousness','& Shared Seed'],x:.5,y:.84,col:C.green},
+    {id:'clt',lbl:['Rotated','Coordinates'],             x:.28,y:.18,col:C.blue},
+    {id:'rd', lbl:['Compression','Floor'],               x:.72,y:.18,col:C.blue},
+    {id:'jl', lbl:['Johnson-Lindenstrauss','Lemma'],     x:.5, y:.38,col:C.blue},
+    {id:'arc',lbl:['Arc-Cosine','Identity'],             x:.5, y:.54,col:C.green},
+    {id:'lln',lbl:['Law of Large','Numbers'],            x:.5, y:.70,col:C.green},
+    {id:'do', lbl:['Shared','Randomness'],               x:.5, y:.84,col:C.green},
     {id:'tq', lbl:['TurboQuant','near-optimal · unbiased · zero overhead'],x:.5,y:.96,col:C.orange},
   ];
   const edges=[['com','clt'],['com','jl'],['clt','jl'],['rd','jl'],['jl','arc'],['arc','lln'],['lln','do'],['do','tq'],['clt','tq'],['rd','tq']];
@@ -793,6 +883,19 @@ document.addEventListener('DOMContentLoaded',()=>{
     delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],
     throwOnError:false});
 });
+
+// ── Reading progress bar ────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  const pct=h>0?Math.min(100,(window.scrollY/h)*100):0;
+  document.getElementById('progress-bar').style.width=pct+'%';
+});
+
+// ── Entrance animations (intersection observer) ─────────
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+},{threshold:0.08});
+document.querySelectorAll('.pillar,.chain-section').forEach(el=>observer.observe(el));
 </script>
 </body>
 </html>
