@@ -158,7 +158,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
   <span class="plabel" style="color:var(--blue)">How TurboQuant works</span>
   TurboQuant compresses each KV vector in two stages using only a shared random seed.
   <br><br>
-  <strong style="color:var(--green)">Stage 1</strong> rotates the vector and rounds each coordinate to a small number of bits. This captures most of the signal but introduces some rounding error.
+  <strong style="color:var(--green)">Stage 1</strong> rotates the vector and quantizes each coordinate to a small number of bits using an optimal scalar quantizer matched to the resulting Beta distribution. This captures most of the signal but introduces some quantization error.
   <br><br>
   <strong style="color:var(--blue)">Stage 2</strong> takes the leftover error from Stage 1, which is approximately isotropic due to the random rotation and projects it onto many random directions, storing just the sign (+1 or -1) of each. At query time, these bits provide a correction that brings the estimate closer to the true answer. Because Stage 1 already captured most of the signal, the leftover is small, so even a compact set of sign bits is enough.
   <br><br>
@@ -302,7 +302,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    <strong>The quantisation payoff:</strong> Once every coordinate looks like the same bell curve, a single rounding grid works well for all of them. No codebook and no per block scale factors are needed. This is why Stage 1 can use simple rounding and still get close to the theoretical best.
+    <strong>The quantisation payoff:</strong> Once every coordinate follows the same known distribution (Beta), we can precompute an optimal scalar quantizer for that distribution. No codebook and no per block scale factors are needed. This is why Stage 1 can use a single fixed grid and still get close to the theoretical best.
   </div>
 </div>
 
@@ -314,7 +314,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="plain">
     <span class="plabel">Intuition</span>
-    When we compress a song to MP3, we accept some loss in quality to save space. There is a theoretical limit to how good it can sound at a given file size, and no encoder can beat it. Shannon proved the same kind of limit exists for compressing numbers: at a given bit budget, there is a minimum error we are stuck with. Rounding each number to the nearest value on a fixed grid nearly hits that limit, but only if the numbers look like a bell curve. The rotation from section 02 is what makes them look that way.
+    When we compress a song to MP3, we accept some loss in quality to save space. There is a theoretical limit to how good it can sound at a given file size, and no encoder can beat it. Shannon proved the same kind of limit exists for compressing numbers: at a given bit budget, there is a minimum error we are stuck with. An optimal scalar quantizer nearly hits that limit, but only if the distribution is known. The rotation from section 02 gives us a known Beta distribution, which makes this possible.
   </div>
 
   <p>Every bit we spend per number buys us more accuracy. For Gaussian distributed data under squared error, Shannon's theorem tells us exactly how much: double the bits, quarter the error. No scheme can beat this floor for that setting.</p>
@@ -323,23 +323,23 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
     <span class="tlabel">Shannon's compression floor</span>
     \(D^*(R) = \sigma^2 \cdot 2^{-2R}\)
     <br><br>
-    <strong>How close does simple rounding get?</strong><br>
+    <strong>How close does optimal scalar quantization get?</strong><br>
     \(\;D_{\text{scalar}} \leq \dfrac{\pi e}{6} \cdot D^*(R) \approx D^*(R) + 1.53\;\text{dB}\)
     <br><br>
-    Within a factor of ~1.5 dB of the theoretical best. This is a classical result for bell-curve-shaped data, and should be read as an asymptotic benchmark rather than an exact guarantee at every bit rate.
+    Within a factor of ~1.5 dB of the theoretical best. This is a classical result for data with a known distribution, and should be read as an asymptotic benchmark rather than an exact guarantee at every bit rate.
   </div>
 
-  <p>For data that is not bell-curve-shaped (like spiky activation vectors), simple rounding does much worse. The rotation from section 02 reshapes the data so this near-optimal guarantee kicks in.</p>
+  <p>For data with an unknown or spiky distribution (like raw activation vectors), scalar quantization does much worse. The rotation from section 02 reshapes the data into a known Beta distribution so an optimal quantizer can be designed and this near-optimal guarantee kicks in.</p>
 
   <div class="viz" id="v3">
     <div class="vtitle"><em>V3</em> How much error does each bit budget buy?</div>
     <div id="v3svg"></div>
-    <p class="vcap"><strong style="color:var(--green)">Green</strong>: Shannon's floor, the best any scheme can do. <strong style="color:var(--blue)">Blue</strong>: simple rounding after rotation, close to optimal. <strong style="color:var(--pink)">Pink</strong>: simple rounding on the original spiky data, noticeably worse. The <strong style="color:var(--orange)">orange vertical</strong> marks one TurboQuant operating point (3.5 bits per dimension).</p>
+    <p class="vcap"><strong style="color:var(--green)">Green</strong>: Shannon's floor, the best any scheme can do. <strong style="color:var(--blue)">Blue</strong>: optimal scalar quantization after rotation, close to optimal. <strong style="color:var(--pink)">Pink</strong>: scalar quantization on the original spiky data, noticeably worse. The <strong style="color:var(--orange)">orange vertical</strong> marks one TurboQuant operating point (3.5 bits per dimension).</p>
   </div>
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    <strong>The efficiency claim:</strong> At around 3 to 3.5 bits per dimension, TurboQuant's simple rounding scheme is close to Shannon's floor for Gaussian sources. For context, FP16 uses 16 bits per dimension. Most of the compression headroom has already been captured.
+    <strong>The efficiency claim:</strong> At around 3 to 3.5 bits per dimension, TurboQuant's optimal scalar quantizer is close to Shannon's floor. For context, FP16 uses 16 bits per dimension. Most of the compression headroom has already been captured.
   </div>
 </div>
 
@@ -458,7 +458,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant</span>
-    Suppose the true similarity between a residual and a query is 0.7. A single sign bit just says +1 or -1, which is crude. But TurboQuant stores one bit per dimension, so for a 128 dimensional vector that is 128 sign bits. We multiply each stored sign by the query's projection in that direction, then average all 128 products. After correcting for the known scaling factor, we might get 0.69. That is Stage 2: a cheap correction built from signs that closes the gap left by Stage 1's rounding.
+    Suppose the true similarity between a residual and a query is 0.7. A single sign bit just says +1 or -1, which is crude. But TurboQuant stores one bit per dimension, so for a 128 dimensional vector that is 128 sign bits. We multiply each stored sign by the query's projection in that direction, then average all 128 products. After correcting for the known scaling factor, we might get 0.69. That is Stage 2: a cheap correction built from signs that closes the gap left by Stage 1's quantization.
   </div>
 </div>
 
@@ -493,7 +493,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant</span>
-    Stage 1 captures most of the signal but leaves a small residual. Stage 2 stores one sign bit per dimension to compress that residual. Each bit is an independent noisy estimate of the same similarity. By the law of large numbers, averaging all d of them shrinks the variance by a factor of d (so the standard deviation shrinks by a factor of √d). This is why even one bit per dimension is enough to make Stage 2 error much smaller than Stage 1 rounding error.
+    Stage 1 captures most of the signal but leaves a small residual. Stage 2 stores one sign bit per dimension to compress that residual. Each bit is an independent noisy estimate of the same similarity. By the law of large numbers, averaging all d of them shrinks the variance by a factor of d (so the standard deviation shrinks by a factor of √d). This is why even one bit per dimension is enough to make Stage 2 error much smaller than Stage 1 quantization error.
   </div>
 </div>
 
@@ -832,7 +832,7 @@ function drawHist(g,data,w,h,col,opts={}){
   const cW=w/3;
   const cols=[
     {lbl:['TurboQuant','stored per vector'],col:C.green,items:['quantised values (b bits/dim)','sign bits (1 bit/dim)','vector length (1 scalar)']},
-    {lbl:['Shared seed','(zero cost per vector)'],col:C.blue, items:['rotation matrix','projection matrix','rounding grid']},
+    {lbl:['Shared seed','(zero cost per vector)'],col:C.blue, items:['rotation matrix','projection matrix','quantization grid']},
     {lbl:['Competitors','extra cost per vector'],col:C.orange,items:['per-group scale factors','codebook entries','calibration stats']},
   ];
   cols.forEach((c,ci)=>{
