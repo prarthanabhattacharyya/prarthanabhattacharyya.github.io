@@ -493,7 +493,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant</span>
-    Stage 1 captures most of the signal but leaves a small residual. Stage 2 stores one sign bit per dimension to compress that residual. Each bit is an independent noisy estimate of the same similarity. By the law of large numbers, averaging all d of them shrinks the variance by a factor of d (so the standard deviation shrinks by a factor of √d). This is why even one bit per dimension is enough to make Stage 2 error much smaller than Stage 1 quantization error.
+    Stage 1 captures most of the signal but leaves a small residual. Stage 2 stores one sign bit per dimension to compress that residual. Each bit is a noisy estimate of the same similarity. By the law of large numbers, averaging all d of them shrinks the variance by a factor of d (so the standard deviation shrinks by a factor of √d). This is why even one bit per dimension is enough to make Stage 2 error much smaller than Stage 1 quantization error.
   </div>
 </div>
 
