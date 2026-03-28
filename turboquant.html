@@ -339,7 +339,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant &amp; attention savings</span>
-    <strong>The efficiency claim:</strong> At around 3 to 3.5 bits per dimension, TurboQuant's optimal scalar quantizer is close to Shannon's floor. For context, FP16 uses 16 bits per dimension. Most of the compression headroom has already been captured.
+    <strong>The efficiency claim:</strong> Shannon's formula above gives the theoretical floor for any quantizer. TurboQuant's paper proves its own MSE bound: \(D_{\text{mse}} \leq \sqrt{3\pi/2}\cdot 4^{-b}\), against a lower bound of \(4^{-b}\) for any \(b\)-bit quantizer — a gap of about \(2.17\times\). At 3 to 3.5 bits per dimension this is near-optimal up to a small constant factor. For context, FP16 uses 16 bits per dimension.
   </div>
 </div>
 
@@ -523,7 +523,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant</span>
-    Traditional methods typically need 1 to 2 extra bits per dimension for per vector metadata (scale factors, codebook indices). TurboQuant replaces all of that with a single shared seed. For a 128K token context, that difference adds up to megabytes of overhead eliminated.
+    Traditional methods typically need per-vector metadata (scale factors, codebook indices). TurboQuant replaces all of that with a single shared seed — the random matrices are regenerated from it at query time, so no per-vector overhead is needed.
   </div>
 </div>
 
