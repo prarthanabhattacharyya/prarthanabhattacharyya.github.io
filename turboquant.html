@@ -137,7 +137,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
   <div class="wrap">
     <span class="tag">ICLR 2026</span>
     <h1>The Maths Behind TurboQuant</h1>
-    <p class="sub">LLM inference is bottlenecked by the KV cache. TurboQuant compresses it to <strong style="color:var(--green)">around 3 to 3.5 bits per dimension</strong>, getting close to the theoretical best while needing only a single shared seed instead of per vector metadata.</p>
+    <p class="sub">LLM inference is bottlenecked by the KV cache. TurboQuant compresses it to <strong style="color:var(--green)">around 3 to 3.5 bits per dimension</strong> with near-optimal worst-case distortion up to a small constant factor, using only data-oblivious random transforms shared across vectors.</p>
 
     <p style="font-family:var(--mono);font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin:1.8rem 0 .7rem">Seven mathematical pillars</p>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin:1.5rem auto 0;max-width:760px;text-align:left">
@@ -288,7 +288,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
     Exact: \(\quad\frac{(Rx)_i^2}{\|x\|^2} \;\sim\; \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
     <br>Equivalent rescaling: \(\;\frac{d\,(Rx)_i^2}{\|x\|^2} \sim d\cdot \mathrm{Beta}\!\left(\tfrac{1}{2},\,\tfrac{d-1}{2}\right)\)
     <br><br>
-    The coordinates \((Rx)_i\) are exchangeable and pairwise uncorrelated (\(\mathbb{E}[(Rx)_i(Rx)_j] = 0\) for \(i \neq j\)). Each coordinate is approximately Gaussian for large \(d\), and any fixed finite subset of coordinates becomes approximately independent. (They are not truly independent because the sphere constrains the sum of squares, but in high dimensions this coupling is negligible for quantisation purposes.)
+    The coordinates \((Rx)_i\) are exchangeable and pairwise uncorrelated (\(\mathbb{E}[(Rx)_i(Rx)_j] = 0\) for \(i \neq j\)). Each coordinate is approximately Gaussian for large \(d\), and distinct coordinates behave nearly independently — not truly independent because the sphere constrains the sum of squares, but in high dimensions this coupling is negligible for scalar quantisation purposes.
   </div>
 
   <div class="viz" id="v2">
@@ -436,7 +436,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
   </div>
 
   <div class="thm">
-    <span class="tlabel">Arc-cosine identity (exact, any d)</span>
+    <span class="tlabel">Arc-cosine identity (exact for Gaussian random hyperplanes, any d)</span>
     \(\mathbb{P}\!\left(\mathrm{sign}(j^\top r) = \mathrm{sign}(j^\top q)\right) = 1 - \frac{\theta(r,q)}{\pi}\)
     <br><br>
     where \(\theta(r,q) = \arccos\!\left(\frac{\langle r,q\rangle}{\|r\|\|q\|}\right)\). The key mixed expectation:
@@ -523,7 +523,7 @@ code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--border
 
   <div class="conn">
     <span class="clabel">Connection to TurboQuant</span>
-    Traditional methods typically need per-vector metadata (scale factors, codebook indices). TurboQuant replaces all of that with a single shared seed — the random matrices are regenerated from it at query time, so no per-vector overhead is needed.
+    Traditional methods typically need per-vector metadata (scale factors, codebook indices). Because TurboQuant's random transforms are data-oblivious and shared across vectors, it avoids this kind of per-vector calibration overhead.
   </div>
 </div>
 
